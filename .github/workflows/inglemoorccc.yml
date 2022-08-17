@@ -25,7 +25,7 @@ jobs:
     - name: Setup tailwind
       run: npm install -D tailwindcss
     - name: Tailwindcss
-      run: npx tailwindcss -i "${{ env.WORKING_DIRECTORY }}/Styles/app.css" -o "${{ env.WORKING_DIRECTORY }}/wwwroot/tailwind.css" --minify
+      run: npx tailwindcss -c "${{ env.WORKING_DIRECTORY }}/tailwind.config.js" -i "${{ env.WORKING_DIRECTORY }}/Styles/app.css" -o "${{ env.WORKING_DIRECTORY }}/wwwroot/tailwind.css" --minify
     - name: Restore
       run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
     - name: Build
