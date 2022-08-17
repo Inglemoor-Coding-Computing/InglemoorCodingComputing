@@ -8,7 +8,7 @@ public record Meeting
 
     public DateOnly Date { get; init; }
 
-    public int Year => Date.Year;
+    public int Year => AppUser.ToAcademicYear(Date.ToDateTime(new()));
 
     public TimeOnly StartTime { get; init; }
 

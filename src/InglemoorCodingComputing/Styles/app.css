@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+
+@layer components {
+    .static-content h1 {
+        @apply text-4xl;
+    }
+
+    .static-content h2 {
+        @apply text-3xl;
+    }
+
+    .static-content h3 {
+        @apply text-2xl;
+    }
+
+    .static-content h4 {
+        @apply text-xl;
+    }
+
+    .static-content h5 {
+        @apply text-lg;
+    }
+}

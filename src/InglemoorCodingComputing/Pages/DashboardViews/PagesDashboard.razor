@@ -1,0 +1,44 @@
+﻿@page "/dashboard/pages"
+@inject IStaticPageService StaticPageService
+@layout DashboardLayout
+@attribute [Authorize(Roles="Admin")]
+
+<div class="p-3">
+    <AdminCheck/>
+    <h3 class="font-semibold text-3xl dark:text-indigo-300">Pages</h3>
+
+    <h4>Create Static Markdown Page</h4>
+    <div class="flex flex-col">
+        <label>
+            Page route:
+            <input class="rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500" @bind=route/>
+        </label>
+        <label>
+            Contents:
+            <textarea class="rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500" @bind=content/>
+        </label>
+        <button @onclick=CreateAsync class="bg-indigo-500">Create</button>
+    </div>
+</div>
+
+@code {
+    private string route = string.Empty;
+    private string content = string.Empty;
+    private async Task CreateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(route))
+            return;
+        await StaticPageService.CreateAsync(new()
+        {
+            Id = Guid.NewGuid(),
+            Live = true,
+            Authorized = false,
+            Path = route,
+            Rendered = Markdig.Markdown.ToHtml(content),
+            Raw = content,
+            Type = StaticPageType.Markdown
+        });
+        route = string.Empty;
+        content = string.Empty;
+    }
+}

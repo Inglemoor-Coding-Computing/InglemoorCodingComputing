@@ -1,0 +1,52 @@
+﻿@page "/page/{*pageRoute}"
+@inject IStaticPageService StaticPageService
+
+@if (notFound)
+{
+    <PageTitle>Not found</PageTitle>
+}
+else if (contents is null)
+{
+    <PageTitle>Loading</PageTitle>    
+}
+else
+{
+    <div class="static-content text-slate-900 dark:text-white px-10">
+        @StringToHtml(contents)
+
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string? PageRoute { get; set; }
+
+    private string? contents;
+
+    private bool notFound = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (PageRoute is null) 
+            {
+                notFound = true;
+                return;
+            }
+            var page = await StaticPageService.FindAsync(PageRoute);
+            if (page is null || !page.Live)
+            {
+                notFound = true;
+                return;
+            }
+            contents = page.Rendered;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    RenderFragment StringToHtml(string htmlString)
+    {
+        return new RenderFragment(b => b.AddMarkupContent(0, htmlString));
+    }
+}

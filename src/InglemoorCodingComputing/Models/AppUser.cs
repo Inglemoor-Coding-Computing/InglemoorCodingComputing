@@ -16,10 +16,17 @@ public record AppUser
 
     public DateTime? DeletedDate { get; init; }
 
-    public static int AcademicYear =>
-        new DateTime(DateTime.UtcNow.Year, 8, 1) > DateTime.UtcNow
-        ? DateTime.UtcNow.Year
-        : DateTime.UtcNow.Year + 1;
+    public static int AcademicYear => ToAcademicYear(DateTime.UtcNow);
+
+    public static int ToAcademicYear(DateTime dt) =>
+        new DateTime(dt.Year, 8, 1) > dt
+        ? dt.Year
+        : dt.Year + 1;
+
+    public static int CalenderYear(int academicYear, int month, int day) =>
+        new DateTime(DateTime.UtcNow.Year, 8, 1) > new DateTime(DateTime.UtcNow.Year, month, day)
+        ? academicYear
+        : academicYear - 1;
 
     public static int GradeLevelToGraduationYear(int grade) =>
         12 - grade + AcademicYear;

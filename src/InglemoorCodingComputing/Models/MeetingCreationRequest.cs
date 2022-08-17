@@ -23,11 +23,14 @@ public class MeetingCreationRequest
 
     public bool ToMeeting(Guid? createdBy, [MaybeNullWhen(false)] out Meeting meeting)
     {
+        meeting = null;
         try
         {
-            DateOnly date = new(AppUser.AcademicYear, Month ?? -1, Day ?? -1);
+            DateOnly date = new(AppUser.CalenderYear(AppUser.AcademicYear, Month ?? -1, Day ?? -1), Month ?? -1, Day ?? -1);
             var start = TimeOnly.ParseExact(StartTime ?? string.Empty, "t");
             var end = TimeOnly.ParseExact(EndTime ?? string.Empty, "t");
+            if (start >= end)
+                return false;
             meeting = new()
             {
                 Id = Guid.NewGuid(),
@@ -43,7 +46,6 @@ public class MeetingCreationRequest
         }
         catch
         {
-            meeting = null;
             return false;
         }
     }

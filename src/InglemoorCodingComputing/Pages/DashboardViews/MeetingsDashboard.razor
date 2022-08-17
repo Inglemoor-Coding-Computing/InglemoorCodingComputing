@@ -12,30 +12,54 @@
 
     <h4>Create Meeting</h4>
     <div>
-        <EditForm Model="@creation" OnValidSubmit="@CreateAsync" class="flex flex-col rounded-2xl border border-gray-300">
+        <EditForm Model="@creation" OnValidSubmit="@CreateAsync" class="flex flex-col space-y-3 rounded-2xl border border-gray-300 p-4 w-80">
             <DataAnnotationsValidator/>
-            <ValidationSummary/>
-
-            <InputText class="focus:outline-none rounded-lg border-indigo-500" id="name" @bind-Value="creation.Name"/>
-            <InputText class="focus:outline-none rounded-lg border-indigo-500" id="details" @bind-Value="creation.Details"/>
-            <InputNumber class="focus:outline-none rounded-lg border-indigo-500" id="month" @bind-Value="creation.Month"/>
-            <InputNumber class="focus:outline-none rounded-lg border-indigo-500" id="day" @bind-Value="creation.Day"/>
-            <InputText class="focus:outline-none rounded-lg border-indigo-500" id="start" @bind-Value="creation.StartTime"/>
-            <InputText class="focus:outline-none rounded-lg border-indigo-500" id="end" @bind-Value="creation.EndTime"/>
-            <button type="submit">Create</button>
-            @if (!string.IsNullOrWhiteSpace(error))
-            {
-                <span>@error</span>
-            }
+            <label>
+                Name:
+                <InputText class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1" id="name" @bind-Value="creation.Name"/>
+            </label>
+            <label>
+                Details (optional):<br/>
+                <textarea class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1" id="details" @bind="creation.Details"/>
+            </label>
+            <label>
+                Month/Day<br/>
+                <InputNumber class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1 w-10" id="month" @bind-Value="creation.Month"/>
+                /
+                <InputNumber class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1 w-10" id="day" @bind-Value="creation.Day"/>
+            </label>
+            <label>
+                Start Time:
+                <InputText class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1 w-24" id="start" @bind-Value="creation.StartTime"/>
+            </label>
+            <label>
+                End Time:
+                <InputText class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1 w-24" id="end" @bind-Value="creation.EndTime"/>
+            </label>
+            <div class="text-rose-500">
+                <ValidationSummary />
+                @if (!string.IsNullOrWhiteSpace(error))
+                {
+                    <span class="text-rose-500">@error</span>
+                }
+            </div>
+            <button class="bg-indigo-500 rounded-md" type="submit">Create</button>
         </EditForm>
     </div>
 
-    <hr/>
-
     @if (next is not null)
     {
-        <MeetingView Meeting="@next" Editable=true/>
+        <div class="pt-5">
+            Next Meeting:
+            <MeetingView Meeting=@next Editable=true/>
+        </div>
     }
+    <div class="overflow-auto">
+        <span class="pt-5">All Meetings:</span>
+        <Virtualize Items=@meetings Context="meeting">
+            <MeetingView @key=meeting.Id Meeting=meeting Editable=true/>
+        </Virtualize>
+    </div>
 </div>
 
 @code {
@@ -43,6 +67,8 @@
     string? error;
 
     Meeting? next;
+
+    List<Meeting> meetings = new();
 
     private async Task CreateAsync()
     {
@@ -56,7 +82,6 @@
         }
         else
             error = "Invalid Parameters";
-        await InvokeAsync(StateHasChanged);
     }
 
     private async Task ClearAsync()
@@ -65,26 +90,34 @@
         creation.StartTime = dt.ToString("t");
         creation.Day = dt.Day;
         creation.Month = dt.Month;
-        await InvokeAsync(StateHasChanged);
+        creation.Name = string.Empty;
+        creation.Details = string.Empty;
+        creation.EndTime = string.Empty;
     }
 
     private async Task RefreshAsync()
     {
         var dt = (await TimeZoneService.GetLocalDateTime(DateTimeOffset.UtcNow)).LocalDateTime;
+        meetings = await MeetingsService.GetMeetingsAsync(AppUser.AcademicYear).ToListAsync();
+        meetings.Sort((x, y) => x.Date.CompareTo(y.Date));
         next = await MeetingsService.NextAsync(dt);
-        await InvokeAsync(StateHasChanged);
     }
 
     private async void OnChanged(object? _, EventArgs __)
     {
-
+        await RefreshAsync();
+        await InvokeAsync(StateHasChanged);
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await ClearAsync();
-        await RefreshAsync();
-        MeetingsService.Changed += OnChanged;
+        if (firstRender)
+        {
+            await ClearAsync();
+            await RefreshAsync();
+            MeetingsService.Changed += OnChanged;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     public void Dispose() =>

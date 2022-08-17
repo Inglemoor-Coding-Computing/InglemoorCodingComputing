@@ -17,6 +17,7 @@ async Task<CosmosClient> ConfigureCosmos(IConfigurationSection config)
     _ = await db.CreateContainerIfNotExistsAsync(new(config["AuthContainer"], "/id"));
     _ = await db.CreateContainerIfNotExistsAsync(new(config["UserContainer"], "/id"));
     _ = await db.CreateContainerIfNotExistsAsync(new(config["MeetingsContainer"], "/id"));
+    _ = await db.CreateContainerIfNotExistsAsync(new(config["StaticPagesContainer"], "/id"));
     return cosmos;
 }
 
@@ -36,7 +37,8 @@ builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddScoped<IThemeService, ThemeService>();
 builder.Services.AddScoped<IUserStateService, UserStateService>();
-builder.Services.AddScoped<IMeetingsService, MeetingsService>();
+builder.Services.AddScoped<IMeetingsService, MeetingsService>(); 
+builder.Services.AddScoped<IStaticPageService, StaticPageService>();
 builder.Services.AddScoped<TimeZoneService>();
 
 var app = builder.Build();
