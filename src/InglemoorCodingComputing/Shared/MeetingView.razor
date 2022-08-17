@@ -1,0 +1,11 @@
+﻿<div class="dark:bg-slate-700 rounded-2xl border border-gray-300 text-slate-900 dark:text-slate-200">
+    <div>@Meeting.Date.ToString("D")</div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Meeting Meeting { get; set; } = null!;
+
+    [Parameter]
+    public bool Editable { get; set; }
+}

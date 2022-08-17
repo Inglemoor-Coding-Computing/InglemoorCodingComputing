@@ -1,0 +1,21 @@
+@inherits LayoutComponentBase
+
+<div class="flex flex-col h-screen bg-white dark:bg-zinc-900 inset-0">
+    <div>
+        <NavMenu />
+    </div>
+
+    <main class="flex-grow">
+        <article class="px-4">
+            @Body
+        </article>
+    </main>
+    
+    <footer>
+        <div class="relative flex py-5 items-center">
+            <div class="flex-grow border-t border-gray-400 mx-4"></div>
+            <span class="flex-shrink text-gray-400 text-sm">&copy; @DateTime.Now.Year Inglemoor Coding & Computing Club </span>
+            <div class="flex-grow border-t border-gray-400 mx-4"></div>
+        </div>
+    </footer>
+</div>

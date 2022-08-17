@@ -1,0 +1,55 @@
+﻿@page
+@model InglemoorCodingComputing.Pages.RegisterModel
+@{
+    ViewData["Title"] = "Register";
+    Layout = "_Layout";
+}
+
+<div class="min-h-full flex items-start justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="dark:bg-zinc-900 max-w-md space-y-3">
+        <div class="border-2 border-indigo-400 shadow shadow-indigo-500/50 rounded-lg pt-4 px-6">
+            <img class="mx-auto h-20 w-auto pt-3" src="/logo.webp" />
+            <h2 class="mt-6 dark:text-slate-200 text-center text-2xl font-semibold text-slate-900">Sign up</h2>
+            <p class="m-2 text-center text-md dark:text-slate-200 text-slate-900">
+                or 
+                <a class="font-medium text-indigo-500 hover:text-indigo-400" asp-page="/authentication/register">sign in to your account</a>
+            </p>
+            <form method="post" class="px-8 pb-8 flex flex-col space-y-2">
+                <div class="flex space-x-2">
+                    <div>
+				        <label asp-for="Input.FirstName" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">First Name</label>
+				        <input type="text" asp-for="Input.FirstName" id="firstname" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" value=""/>
+                        <span class="min-w-0 text-center text-red-500" asp-validation-for="Input.FirstName"></span>
+                    </div>
+                    <div>
+				        <label asp-for="Input.LastName" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Last Name</label>
+				        <input type="text" asp-for="Input.LastName" id="lastname" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" value=""/>
+                        <span class="min-w-0 text-center text-red-500" asp-validation-for="Input.LastName"></span>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <div>
+				        <label asp-for="Input.GradeLevel" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Grade</label>
+				        <input type="text" asp-for="Input.GradeLevel" id="gradelevel" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="9" value=""/>
+                        <span class="min-w-0 text-center text-red-500" asp-validation-for="Input.GradeLevel"></span>
+                    </div>
+                    <div>
+				        <label asp-for="Input.StudentNumber" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Student Number</label>
+				        <input type="text" asp-for="Input.StudentNumber" id="studentid" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="0000000" value=""/>
+                        <span class="min-w-0 text-center text-red-500" asp-validation-for="Input.StudentNumber"></span>
+                    </div>
+
+                </div>
+                <div>
+				    <label asp-for="Input.Password" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Password</label>
+				    <input type="password" asp-for="Input.Password" id="password" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="********"/>
+                    <span class="min-w-0 text-center text-red-500" asp-validation-for="Input.Password"></span>
+                </div>
+                <div class="flex justify-center">
+                    <button type="submit" class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:shadow-md hover:shadow-indigo-500/50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-xl px-6 py-2 text-center mr-2 mt-2">Register</button>
+                </div>
+                <div class="min-w-0 text-center text-red-500" asp-validation-summary="ModelOnly"></div> 
+            </form>
+        </div>    
+    </div>
+</div>

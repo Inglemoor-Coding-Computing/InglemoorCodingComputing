@@ -1,0 +1,13 @@
+﻿@inherits LayoutComponentBase
+
+<div class="flex h-screen bg-white dark:bg-black text-slate-900 dark:text-slate-300 inset-0">
+    <div>
+        <DashboardNavMenu/>
+    </div>
+
+    <main class="flex-grow">
+        <article class="px-4">
+            @Body
+        </article>
+    </main>
+</div>

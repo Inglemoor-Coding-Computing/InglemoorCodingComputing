@@ -1,0 +1,89 @@
+﻿@page "/dashboard/meetings"
+@inject IMeetingsService MeetingsService
+@inject IUserStateService UserStateService
+@inject TimeZoneService TimeZoneService
+@implements IDisposable
+@layout DashboardLayout
+@attribute [Authorize(Roles="Admin")]
+
+<div class="p-3">
+    <AdminCheck/>
+    <h3 class="font-semibold text-3xl dark:text-indigo-300">Meetings</h3>
+
+    <h4>Create Meeting</h4>
+    <div>
+        <EditForm Model="@creation" OnValidSubmit="@CreateAsync" class="flex flex-col rounded-2xl border border-gray-300">
+            <DataAnnotationsValidator/>
+            <ValidationSummary/>
+
+            <InputText class="focus:outline-none rounded-lg border-indigo-500" id="name" @bind-Value="creation.Name"/>
+            <InputText class="focus:outline-none rounded-lg border-indigo-500" id="details" @bind-Value="creation.Details"/>
+            <InputNumber class="focus:outline-none rounded-lg border-indigo-500" id="month" @bind-Value="creation.Month"/>
+            <InputNumber class="focus:outline-none rounded-lg border-indigo-500" id="day" @bind-Value="creation.Day"/>
+            <InputText class="focus:outline-none rounded-lg border-indigo-500" id="start" @bind-Value="creation.StartTime"/>
+            <InputText class="focus:outline-none rounded-lg border-indigo-500" id="end" @bind-Value="creation.EndTime"/>
+            <button type="submit">Create</button>
+            @if (!string.IsNullOrWhiteSpace(error))
+            {
+                <span>@error</span>
+            }
+        </EditForm>
+    </div>
+
+    <hr/>
+
+    @if (next is not null)
+    {
+        <MeetingView Meeting="@next" Editable=true/>
+    }
+</div>
+
+@code {
+    MeetingCreationRequest creation = new();
+    string? error;
+
+    Meeting? next;
+
+    private async Task CreateAsync()
+    {
+        error = null;
+        var user = await UserStateService.CurrentAsync();
+        Guid? id = user is null ? null : user.Id;
+        if (creation.ToMeeting(id, out var meeting))
+        {
+            await MeetingsService.CreateAsync(meeting);
+            await ClearAsync();
+        }
+        else
+            error = "Invalid Parameters";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ClearAsync()
+    {
+        var dt = (await TimeZoneService.GetLocalDateTime(DateTimeOffset.UtcNow)).LocalDateTime;
+        creation.StartTime = dt.ToString("t");
+        creation.Day = dt.Day;
+        creation.Month = dt.Month;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RefreshAsync()
+    {
+        var dt = (await TimeZoneService.GetLocalDateTime(DateTimeOffset.UtcNow)).LocalDateTime;
+        next = await MeetingsService.NextAsync(dt);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnChanged(object? _, EventArgs _)
+    {
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ClearAsync();
+        await RefreshAsync();
+        MeetingsService.Changed += OnChanged;
+    }
+}

@@ -1,0 +1,16 @@
+﻿@page "/meetings"
+
+<AuthorizeView>
+    <Authorized>
+        <h3>Meetings</h3>
+        Hello, @context.User.Identity?.Name!
+    </Authorized>
+    <NotAuthorized>
+        <p>Not authorized</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+
+}

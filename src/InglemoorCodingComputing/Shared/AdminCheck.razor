@@ -1,0 +1,35 @@
+﻿@using System.Security.Claims
+@inject IUserAuthService UserAuthService
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+@code {
+    [CascadingParameter]
+    protected Task<AuthenticationState> AuthStat { get; set; } = default!;
+
+    protected async override Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        var user = (await AuthStat).User;
+        var id = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (user is null || !(user.Identity?.IsAuthenticated ?? false) || id is null || !await UserAuthService.HasAdminAsync(Guid.Parse(id)))
+            NavigationManager.NavigateTo($"authentication/login", true);
+        else
+        {
+            _id = Guid.Parse(id);
+            UserAuthService.OnAdminRevoked += CheckRevoked;
+        }
+
+    }
+    private Guid _id;
+
+    private void CheckRevoked(object? _, Guid id)
+    {
+        if (id == _id)
+            NavigationManager.NavigateTo($"authentication/login", true);
+    }
+
+    public void Dispose() =>
+        UserAuthService.OnAdminRevoked -= CheckRevoked;
+}

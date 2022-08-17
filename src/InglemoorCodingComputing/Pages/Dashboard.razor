@@ -1,0 +1,16 @@
+﻿@page "/dashboard"
+@layout DashboardLayout
+
+<AuthorizeView Roles="Admin">
+    <NotAuthorized>
+        <h3>This page is currently only available to admins.</h3>
+    </NotAuthorized>
+    <Authorized>
+        <AdminCheck/>
+        <h3>Admin Dashboard</h3>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+
+}
