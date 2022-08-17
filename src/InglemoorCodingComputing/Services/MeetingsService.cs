@@ -8,17 +8,23 @@ public class MeetingsService : IMeetingsService
     private readonly Container _container;
 
     public event EventHandler? Changed;
-    private OnChange() =>
+    private void OnChange() => Changed?.Invoke(this, new());
     public MeetingsService(IConfiguration configuration, CosmosClient cosmosClient)
     {
         _container = cosmosClient.GetContainer(configuration["Cosmos:DatabaseName"], configuration["Cosmos:MeetingsContainer"]);
     }
 
-    public Task CreateAsync(Meeting meeting) =>
-        _container.CreateItemAsync(meeting, partitionKey: new(meeting.Id.ToString()));
+    public async Task CreateAsync(Meeting meeting)
+    {
+        await _container.CreateItemAsync(meeting, partitionKey: new(meeting.Id.ToString()));
+        OnChange();
+    }
 
-    public Task DeleteAsync(Guid id) =>
-        _container.DeleteItemAsync<Meeting>(id.ToString(), new(id.ToString()));
+    public async Task DeleteAsync(Guid id)
+    {
+        await _container.DeleteItemAsync<Meeting>(id.ToString(), new(id.ToString()));
+        OnChange();
+    }
 
     public async IAsyncEnumerable<Meeting> GetMeetingsAsync(int year)
     {
@@ -47,6 +53,9 @@ public class MeetingsService : IMeetingsService
     public async Task<Meeting> ReadAsync(Guid id) =>
         (await _container.ReadItemAsync<Meeting>(id.ToString(), new(id.ToString()))).Resource;
 
-    public Task UpdateAsync(Meeting meeting) =>
-        _container.ReplaceItemAsync(meeting, meeting.Id.ToString(), new(meeting.Id.ToString()));
+    public async Task UpdateAsync(Meeting meeting)
+    {
+        await _container.ReplaceItemAsync(meeting, meeting.Id.ToString(), new(meeting.Id.ToString()));
+        OnChange();
+    }
 }
