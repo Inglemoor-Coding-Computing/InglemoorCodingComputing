@@ -75,7 +75,7 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async void OnChanged(object? _, EventArgs _)
+    private async void OnChanged(object? _, EventArgs __)
     {
 
     }
@@ -86,4 +86,7 @@
         await RefreshAsync();
         MeetingsService.Changed += OnChanged;
     }
+
+    public void Dispose() =>
+        MeetingsService.Changed -= OnChanged;
 }
