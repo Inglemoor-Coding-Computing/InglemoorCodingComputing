@@ -18,6 +18,14 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+    - name: Setup node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+    - name: Setup tailwind
+      run: npm install -D tailwindcss
+    - name: Tailwindcss
+      run: npx tailwindcss -c "${{ env.WORKING_DIRECTORY }}/tailwind.config.js" -i "${{ env.WORKING_DIRECTORY }}/Styles/app.css" -o "${{ env.WORKING_DIRECTORY }}/wwwroot/tailwind.css" --minify
     - name: Restore
       run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
     - name: Build
