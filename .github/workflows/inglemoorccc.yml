@@ -37,11 +37,12 @@ jobs:
     - name: Publish
       run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
     - name: Deploy to Azure VM
-      uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+      uses: appleboy/scp-action@master
       with:
-        server: 20.168.87.53
+        host: 20.168.87.53
+        post: 22
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local_path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        remote_path: ./var/DotNetApp/
+        source: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        target: /var/DotNetApp/
         sftpArgs: '-o ConnectTimeout=5'
