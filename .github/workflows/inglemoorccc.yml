@@ -42,7 +42,6 @@ jobs:
         server: 20.168.87.53
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        protocol: ftps
-        local-path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        server-remote_path: /var/DotNetApp/
+        local_path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        remote_path: /var/DotNetApp/
         sftpArgs: '-o ConnectTimeout=5'
