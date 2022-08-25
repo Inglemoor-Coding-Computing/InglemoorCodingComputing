@@ -43,5 +43,5 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local_path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        remote_path: /var/DotNetApp/
+        remote_path: ./var/DotNetApp/
         sftpArgs: '-o ConnectTimeout=5'
