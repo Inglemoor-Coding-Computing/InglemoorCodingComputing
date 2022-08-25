@@ -1,6 +1,8 @@
 ﻿@page "/dashboard"
 @layout DashboardLayout
 
+<PageTitle>Dashboard</PageTitle>
+
 <AuthorizeView Roles="Admin">
     <NotAuthorized>
         <h3>This page is currently only available to admins.</h3>

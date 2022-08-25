@@ -1,19 +1,24 @@
 ﻿@page "/page/{*pageRoute}"
+@page "/pages/{*pageRoute}"
 @inject IStaticPageService StaticPageService
+@inject IJSRuntime JSRuntime
 
 @if (notFound)
 {
     <PageTitle>Not found</PageTitle>
+    <NotFound/>
 }
 else if (contents is null)
 {
-    <PageTitle>Loading</PageTitle>    
+    <PageTitle>Loading</PageTitle>
 }
 else
 {
-    <div class="static-content text-slate-900 dark:text-white px-10">
-        @StringToHtml(contents)
-
+    <PageTitle>@title</PageTitle>
+    <div class="flex justify-center">
+        <div class="bg-transparent grow prose lg:prose-lg prose-pre:font-code prose-pre:bg-transparent dark:prose-invert rounded-md px-2 py-1 m-1">
+            @((MarkupString)contents)
+        </div>
     </div>
 }
 
@@ -22,6 +27,8 @@ else
     public string? PageRoute { get; set; }
 
     private string? contents;
+
+    private string? title;
 
     private bool notFound = false;
 
@@ -32,21 +39,20 @@ else
             if (PageRoute is null) 
             {
                 notFound = true;
+                await InvokeAsync(StateHasChanged);
                 return;
             }
             var page = await StaticPageService.FindAsync(PageRoute);
             if (page is null || !page.Live)
             {
                 notFound = true;
+                await InvokeAsync(StateHasChanged);
                 return;
             }
             contents = page.Rendered;
+            title = page.Title;
             await InvokeAsync(StateHasChanged);
         }
-    }
-
-    RenderFragment StringToHtml(string htmlString)
-    {
-        return new RenderFragment(b => b.AddMarkupContent(0, htmlString));
+        await JSRuntime.InvokeVoidAsync("highlightSnippet");
     }
 }

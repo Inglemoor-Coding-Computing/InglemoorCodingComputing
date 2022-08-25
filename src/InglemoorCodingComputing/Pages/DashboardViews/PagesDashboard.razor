@@ -1,44 +1,275 @@
 ﻿@page "/dashboard/pages"
-@inject IStaticPageService StaticPageService
 @layout DashboardLayout
+@inject IStaticPageService StaticPageService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject Ganss.XSS.HtmlSanitizer HtmlSanitizer
+@implements IDisposable
 @attribute [Authorize(Roles="Admin")]
+@using System.Text.RegularExpressions
+@using System.Web
+@using Markdig
 
+<PageTitle>Pages</PageTitle>
+
+<AdminCheck/>
 <div class="p-3">
-    <AdminCheck/>
     <h3 class="font-semibold text-3xl dark:text-indigo-300">Pages</h3>
 
-    <h4>Create Static Markdown Page</h4>
-    <div class="flex flex-col">
-        <label>
-            Page route:
-            <input class="rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500" @bind=route/>
-        </label>
-        <label>
-            Contents:
-            <textarea class="rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500" @bind=content/>
-        </label>
-        <button @onclick=CreateAsync class="bg-indigo-500">Create</button>
+    <h4 class="text-lg py-4 underline">Create Static Page</h4>
+    <div class="flex flex-col space-y-3">
+        <div class="flex flex-col">
+            <div class="flex align-middle items-center">
+                Page route:
+                <input class="rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500" @bind=Route @bind:event="oninput"/>
+                Title:
+                <input class="rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500" @bind=title @bind:event="oninput"/>
+            </div>
+            @if (routeInvalid is not null)
+            {
+                <p class="text-rose-500">@routeInvalid</p>
+            }
+            else
+            {
+                <p class=@(willOverwrite ? "text-amber-500" : "text-emerald-400")>@finalRoute</p>
+            }
+        </div>
+
+        <div class="flex space-x-3 accent-indigo-500">
+            <select @onchange=TypeChanged class="rounded-md p-1 dark:bg-zinc-800">
+                <option value="@nameof(StaticPageType.Markdown)">Markdown</option>
+                <option value="@nameof(StaticPageType.Html)">Html</option>
+                <option value="@nameof(StaticPageType.Text)">Text</option>
+            </select>
+            <label for="live">Live:</label>
+            <input id="live" type="checkbox" @bind=live/>
+            <label for="auth">Authenticated:</label>
+            <input id="auth" type="checkbox" @bind=auth/>
+            @if (auth)
+            {
+                <label for="admin">Admin:</label>
+                <input id="admin" type="checkbox" @bind=admin/>
+            }
+        </div>
+
+        <div>
+            Contents: <br/>
+            <div class="flex">
+                <textarea class="whitespace-pre break-normal overflow-x-scroll w-1/2 h-96 font-code rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500" aria-hidden="true" @bind=Content @bind:event="oninput"/>
+                <div class="prose prose-pre:p-0 prose-pre:bg-white prose-pre:rounded-none prose-pre:font-code dark:prose-invert max-w-none w-1/2 rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500">
+                    @if (loading)
+                    {
+                        <div class="justify-self-center flex justify-center pt-5">
+                            <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    }
+                    else
+                    {
+                        @((MarkupString)rendered)
+                    }
+                </div>
+            </div>
+        </div>
+        <button disabled=@Disabled @onclick=CreateAsync class=@($"text-white rounded-lg px-8 py-3 self-center {(Disabled ? "bg-indigo-300" : "bg-indigo-500")}")>@(willOverwrite ? "Update" : "Create")</button>
     </div>
+
+    <h4 class="text-lg pt-4 pb-2 underline">Pages</h4>
+    <Virtualize Items=pages>
+        <div class="py-2 px-3 m-2 flex justify-between bg-gray-100 dark:bg-slate-900 rounded-md" @key=context.Id>
+            <a target="_blank" class=@($"font-mono font-bold {(context.Live ? "text-emerald-400 dark:text-emerald:600 hover:underline" : "text-rose-500")}") href=@($"page/{context.Path}")>/@context.Path</a>
+            <span>@context.Title</span>
+            <div class="flex space-x-6">
+                <!--Today on what not to do...-->
+                <button class="hover:text-amber-500" @onclick="() => { Route = context.Path; title = context.Title; live = context.Live; auth = context.Authorized; admin = context.AdminAuthorized; type = context.Type; Content = context.Raw; }">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                    </svg>
+                </button>
+                <button class="text-rose-500 hover:text-white hover:bg-rose-500 rounded-md p-1" @onclick="() => StaticPageService.DeleteAsync(context.Id)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </Virtualize>
 </div>
 
 @code {
-    private string route = string.Empty;
-    private string content = string.Empty;
+    private bool live = true;
+    private bool auth;
+    private bool admin;
+    private string _route = string.Empty;
+    private string Route
+    {
+        get => _route;
+        set
+        {
+            _route = value;
+            _ = PathEntered();
+        }
+    }
+    private bool willOverwrite;
+    private string? title;
+    private string? finalRoute;
+    private string? routeInvalid;
+    private string _content = string.Empty;
+    private string Content
+    { 
+        get => _content;
+        set
+        {
+            _content = value;
+            _ = KeyPressed();
+        }
+    }
+    private string rendered = string.Empty;
+    private StaticPageType type = StaticPageType.Markdown;
+
+    private void TypeChanged(ChangeEventArgs e)
+    {
+        type = Enum.Parse<StaticPageType>(e.Value?.ToString() ?? string.Empty);
+        rendered = RenderedContent();
+    }
+
+    private bool queued;
+    private bool loading;
+    private async Task KeyPressed()
+    {
+        if (loading)
+            queued = true;
+        else
+        {
+            do
+            {
+                loading = true;
+                queued = false;
+                rendered = RenderedContent();
+                await Task.Delay(200);
+                loading = false;
+            }
+            while (queued);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private bool queued2;
+    private bool loading2;
+    private async Task PathEntered()
+    {
+        if (loading2)
+            queued2 = true;
+        else
+        {
+            do
+            {
+                loading2 = true;
+                queued2 = false;
+                willOverwrite = false;
+                routeInvalid = null;
+                if (string.IsNullOrWhiteSpace(Route))
+                {
+                    finalRoute = null;
+                    routeInvalid = "Cannot be empty";
+                }
+                else if (Regex.IsMatch(Route, @"[^a-zA-Z0-9+\-\/]", RegexOptions.None, TimeSpan.FromMilliseconds(100)))
+                {
+                    finalRoute = null;
+                    routeInvalid = "Invalid Characters";
+                }
+                else if (await StaticPageService.FindAsync(Route) is not null)
+                {
+                    finalRoute = $"{NavigationManager.BaseUri}page/{Route} -- Existing page will be replaced";
+                    willOverwrite = true;
+                }
+                else
+                    finalRoute = $"{NavigationManager.BaseUri}page/{Route}";
+                loading2 = false;
+            }
+            while (queued2);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private string RenderedContent() =>
+        HtmlSanitizer.Sanitize(type switch
+        {
+            StaticPageType.Markdown => Markdown.ToHtml(Content, new MarkdownPipelineBuilder().UseAdvancedExtensions().Build()),
+            StaticPageType.Html => Content,
+            StaticPageType.Text or _ => $"<pre>{HttpUtility.HtmlEncode(Content)}</pre>",
+        });
+
+    private bool Disabled => string.IsNullOrWhiteSpace(Route) || routeInvalid is not null; 
+
     private async Task CreateAsync()
     {
-        if (string.IsNullOrWhiteSpace(route))
+        if (Disabled)
             return;
-        await StaticPageService.CreateAsync(new()
-        {
-            Id = Guid.NewGuid(),
-            Live = true,
-            Authorized = false,
-            Path = route,
-            Rendered = Markdig.Markdown.ToHtml(content),
-            Raw = content,
-            Type = StaticPageType.Markdown
-        });
-        route = string.Empty;
-        content = string.Empty;
+        if (await StaticPageService.FindAsync(Route) is Models.StaticPage old)
+            await StaticPageService.UpdateAsync(new()
+            {
+                Id = old.Id,
+                Live = live,
+                Authorized = auth,
+                AdminAuthorized = auth && admin,
+                Title = title,
+                Path = Route,
+                Rendered = RenderedContent(),
+                Raw = Content,
+                Type = type
+            });
+        else
+            await StaticPageService.CreateAsync(new()
+            {
+                Id = Guid.NewGuid(),
+                Live = live,
+                Authorized = auth,
+                AdminAuthorized = auth && admin,
+                Title = title,
+                Path = Route,
+                Rendered = RenderedContent(),
+                Raw = Content,
+                Type = type
+            });
+        Route = string.Empty;
+        Content = string.Empty;
+        title = string.Empty;
     }
+
+    private async void OnChanged()
+    {
+        await PathEntered();
+        await GetPagesAsync();
+    }
+
+    private async Task GetPagesAsync()
+    {
+        pages.Clear();
+        await foreach(var page in StaticPageService.SearchAsync())
+        {
+            pages.Add(page);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    List<Models.StaticPage> pages = new();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeVoidAsync("highlightSnippet");
+        if (firstRender)
+        {
+            StaticPageService.Changed += OnChanged;
+            await foreach(var page in StaticPageService.SearchAsync())
+            {
+                pages.Add(page);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    public void Dispose() =>
+        StaticPageService.Changed -= OnChanged;
 }

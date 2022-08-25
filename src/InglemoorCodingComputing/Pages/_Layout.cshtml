@@ -10,11 +10,25 @@
         <base href="~/" />
         <link rel="stylesheet" href="tailwind.css" />
         <link href="css/site.css" rel="stylesheet" />
+        <link title="light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github.min.css" disabled>
+        <link title="dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github-dark.min.css" disabled>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/languages/fsharp.min.js"></script>
         <script>
-            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches))
+            window.highlightSnippet = function(){
+                hljs.highlightAll();
+            }
+        </script>
+        <script>
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark')
-            else
+                document.querySelector(`link[title="dark"]`).removeAttribute("disabled");
+            }
+            else {
                 document.documentElement.classList.remove('dark')
+                document.querySelector(`link[title="light"]`).removeAttribute("disabled");
+            }
+            highlightSnippet();
         </script>
         <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
     </head>

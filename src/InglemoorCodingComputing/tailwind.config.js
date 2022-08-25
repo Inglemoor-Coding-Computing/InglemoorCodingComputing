@@ -7,8 +7,11 @@ module.exports = {
         extend: {
             fontFamily: {
                 'sans': ['Inter', ...defaultTheme.fontFamily.sans],
+                'code': ['"Cascadia Code"']
             },
         },
     },
-    plugins: [],
+    plugins: [
+        require('@tailwindcss/typography')
+    ],
 }

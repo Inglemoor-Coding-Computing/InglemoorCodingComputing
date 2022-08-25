@@ -23,7 +23,9 @@ jobs:
       with:
         node-version: 16
     - name: Setup tailwind
-      run: npm install -D tailwindcss
+      run: |
+        npm install -D tailwindcss
+        npm install -D @tailwindcss/typography
     - name: Tailwindcss
       run: npx tailwindcss -c "${{ env.WORKING_DIRECTORY }}/tailwind.config.js" -i "${{ env.WORKING_DIRECTORY }}/Styles/app.css" -o "${{ env.WORKING_DIRECTORY }}/wwwroot/tailwind.css" --minify
     - name: Restore

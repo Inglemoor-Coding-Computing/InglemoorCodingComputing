@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Azure.Cosmos;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 async Task<CosmosClient> ConfigureCosmos(IConfigurationSection config)
@@ -35,6 +36,12 @@ builder.Services.AddSingleton(x => ConfigureCosmos(x.GetService<IConfiguration>(
 builder.Services.AddSingleton<IUserAuthService, UserAuthService>();
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
+builder.Services.AddSingleton(_ =>
+{
+    Ganss.XSS.HtmlSanitizer x = new();
+    x.AllowedAttributes.Add("class");
+    return x;
+});
 builder.Services.AddScoped<IThemeService, ThemeService>();
 builder.Services.AddScoped<IUserStateService, UserStateService>();
 builder.Services.AddScoped<IMeetingsService, MeetingsService>(); 
