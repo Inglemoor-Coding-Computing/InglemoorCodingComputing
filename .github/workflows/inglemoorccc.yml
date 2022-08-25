@@ -5,7 +5,7 @@ on:
     - main
 env:
   AZURE_WEBAPP_NAME: inglemoorccc
-  AZURE_WEBAPP_PACKAGE_PATH: InglemoorCodingComputing/publish
+  AZURE_WEBAPP_PACKAGE_PATH: InglemoorCodingComputing/publish/
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 6.0.x
   WORKING_DIRECTORY: src/InglemoorCodingComputing
