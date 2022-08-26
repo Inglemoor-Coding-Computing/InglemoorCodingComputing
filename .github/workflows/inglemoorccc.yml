@@ -5,7 +5,7 @@ on:
     - main
 env:
   AZURE_WEBAPP_NAME: inglemoorccc
-  AZURE_WEBAPP_PACKAGE_PATH: InglemoorCodingComputing/publish/
+  AZURE_WEBAPP_PACKAGE_PATH: InglemoorCodingComputing/publish
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 6.0.x
   WORKING_DIRECTORY: src/InglemoorCodingComputing
@@ -36,13 +36,14 @@ jobs:
       run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build
     - name: Publish
       run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
-    - name: Deploy to Azure VM
-      uses: appleboy/scp-action@master
+    - name: Deploy to Azure WebApp
+      uses: azure/webapps-deploy@v2
       with:
-        host: 20.168.87.53
-        post: 22
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        source: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        target: /var/DotNetApp/
-        sftpArgs: '-o ConnectTimeout=5'
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.inglemoorccc_FFFF }}
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    - name: Publish Artifacts
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: webapp
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
