@@ -4,5 +4,14 @@
     <div class="flex flex-col text-center">
         <h2 class="text-slate-900 dark:text-slate-200 text-3xl mt-4 mb-3">Sign up successful</h2>
         <h3 class="text-indigo-600 dark:text-indigo-400">Welcome to the Inglemoor Coding and Computing Club!</h3>
+        @if (Email)
+        {
+            <p>Look for an email from us to finalize your account.</p>
+        }
     </div>
 </div>
+
+@code {
+    [Parameter, SupplyParameterFromQuery]
+    public bool Email { get; set; }
+}

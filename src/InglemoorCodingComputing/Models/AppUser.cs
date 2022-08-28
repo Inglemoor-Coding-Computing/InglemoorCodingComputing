@@ -4,7 +4,14 @@ public record AppUser
 {
     public Guid Id { get; init; }
 
-    public int StudentNumber { get; init; }
+    public string Email { get; init; } = string.Empty;
+
+    public int? StudentNumber => 
+        Email.EndsWith("@apps.nsd.org") && 
+        Email.Length == 20 &&
+        int.TryParse(Email.Split('@')[0], out var sid) 
+        ? sid 
+        : null;
 
     public string FirstName { get; init; } = string.Empty;
 

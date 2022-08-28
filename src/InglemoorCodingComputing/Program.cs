@@ -7,8 +7,9 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Azure.Cosmos;
 
-
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 async Task<CosmosClient> ConfigureCosmos(IConfigurationSection config)
 {
@@ -32,6 +33,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHttpClient();
 builder.Services.AddSingleton(x => ConfigureCosmos(x.GetService<IConfiguration>()!.GetSection("Cosmos")).Result);
 builder.Services.AddSingleton<IUserAuthService, UserAuthService>();
 builder.Services.AddSingleton<IUserService, UserService>();
@@ -75,6 +77,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthentication();
 
+app.MapControllers();
 app.MapRazorPages();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");

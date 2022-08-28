@@ -34,9 +34,9 @@ public sealed class UserAuthService : IUserAuthService
     /// <param name="username">student id</param>
     /// <param name="password"></param>
     /// <returns></returns>
-    public async Task<UserAuth?> AuthenticateAsync(string username, string password)
+    public async Task<UserAuth?> AuthenticateAsync(string email, string password)
     {
-        var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.Username == username).ToFeedIterator();
+        var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.Email == email).ToFeedIterator();
         List<UserAuth> userAuth = new();
         while (iterator.HasMoreResults)
         {
@@ -70,9 +70,9 @@ public sealed class UserAuthService : IUserAuthService
     /// <param name="username">student id</param>
     /// <param name="password"></param>
     /// <returns></returns>
-    public async Task<UserAuth?> AddUserAsync(string username, string password)
+    public async Task<UserAuth?> AddUserAsync(string email, string password)
     {
-        var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.Username == username).ToFeedIterator();
+        var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.Email == email).ToFeedIterator();
         List<UserAuth> userAuth = new();
         while (iterator.HasMoreResults)
         {
@@ -84,17 +84,17 @@ public sealed class UserAuthService : IUserAuthService
 
         var hash = GetHash(password, out var salt);
         var id = Guid.NewGuid();
-        var user = new UserAuth(id, username, false, Guid.NewGuid().ToString("N"), false, new(hash, salt, _iterations, _parallelism, _memorySize));
+        var user = new UserAuth(id, email, false, Guid.NewGuid().ToString("N"), false, new(hash, salt, _iterations, _parallelism, _memorySize));
         await _container.CreateItemAsync(user, new(id.ToString()));
         return user;
     }
 
-    public async Task<bool> GrantAdminAsync(string username, string key)
+    public async Task<bool> GrantAdminAsync(string email, string key)
     {
         if (string.IsNullOrEmpty(_adminKey) || key != _adminKey)
             return false;
 
-        var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.Username == username).ToFeedIterator();
+        var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.Email == email).ToFeedIterator();
         List<UserAuth> userAuths = new();
         while (iterator.HasMoreResults)
         {
@@ -111,12 +111,12 @@ public sealed class UserAuthService : IUserAuthService
         return true;
     }
 
-    public async Task<bool> RevokeAdminAsync(string username, string key)
+    public async Task<bool> RevokeAdminAsync(string email, string key)
     {
         if (string.IsNullOrEmpty(_adminKey) || key != _adminKey)
             return false;
 
-        var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.Username == username).ToFeedIterator();
+        var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.Email == email).ToFeedIterator();
         List<UserAuth> userAuths = new();
         while (iterator.HasMoreResults)
         {

@@ -8,7 +8,7 @@ public interface IUserAuthService
     /// <param name="username">student id</param>
     /// <param name="password"></param>
     /// <returns></returns>
-    Task<UserAuth?> AuthenticateAsync(string username, string password);
+    Task<UserAuth?> AuthenticateAsync(string email, string password);
 
     /// <summary>
     /// Registers user.
@@ -16,7 +16,7 @@ public interface IUserAuthService
     /// <param name="username">student id</param>
     /// <param name="password"></param>
     /// <returns></returns>
-    Task<UserAuth?> AddUserAsync(string username, string password);
+    Task<UserAuth?> AddUserAsync(string email, string password);
 
     /// <summary>
     /// Gives a user admin role.
@@ -24,7 +24,7 @@ public interface IUserAuthService
     /// <param name="username"></param>
     /// <param name="key">secure admin key</param>
     /// <returns></returns>
-    Task<bool> GrantAdminAsync(string username, string key);
+    Task<bool> GrantAdminAsync(string email, string key);
 
     /// <summary>
     /// Removes a user admin role.
@@ -32,7 +32,7 @@ public interface IUserAuthService
     /// <param name="username"></param>
     /// <param name="key">secure admin key</param>
     /// <returns></returns>
-    Task<bool> RevokeAdminAsync(string username, string key);
+    Task<bool> RevokeAdminAsync(string email, string key);
 
     /// <summary>
     /// Verify token

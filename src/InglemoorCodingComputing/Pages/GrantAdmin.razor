@@ -8,7 +8,7 @@
         @if (verified)
         {
             <div class="flex justify-center space-x-2">
-                <input @bind-value="entry" class="dark:bg-slate-700 border-2 border-indigo-500 rounded-lg px-3 text-slate-900 dark:text-white focus:outline-none" placeholder="Student Id"/>
+                <input @bind-value="entry" class="dark:bg-slate-700 border-2 border-indigo-500 rounded-lg px-3 text-slate-900 dark:text-white focus:outline-none" placeholder="email"/>
                 <button class="font-semibold text-white py-2 px-4 bg-indigo-500 rounded-lg text-md hover:bg-indigo-400" @onclick="Add">Grant Admin</button>
             </div>
             @if (error is not null)
@@ -37,8 +37,8 @@
                     {
                         <div class="max-2-sm rounded-md overflow-hidden shadow-md dark:bg-gray-800 mb-3">
                             <div class="px-6 py-2 flex space-x-4">
-                                <p class="font-bold self-center text-amber-500 dark:text-amber-300">@admin.Username (@admin.Id)</p>
-                                <button class="text-rose-500 hover:bg-gray-200 dark:hover:bg-rose-500 dark:hover:text-gray-800 p-2 rounded-md" @onclick="@(async () => await RemoveAsync(admin.Username))">
+                                <p class="font-bold self-center text-amber-500 dark:text-amber-300">@admin.Email (@admin.Id)</p>
+                                <button class="text-rose-500 hover:bg-gray-200 dark:hover:bg-rose-500 dark:hover:text-gray-800 p-2 rounded-md" @onclick="@(async () => await RemoveAsync(admin.Email))">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M11 6a3 3 0 11-6 0 3 3 0 016 0zM14 17a6 6 0 00-12 0h12zM13 8a1 1 0 100 2h4a1 1 0 100-2h-4z" />
                                     </svg>
@@ -121,7 +121,7 @@
         List<UserAuth> temp = new();
         await foreach (var admin in UserAuthService.GetAdmins())
             temp.Add(admin);
-        temp.Sort((x, y) => x.Username.CompareTo(y.Username));
+        temp.Sort((x, y) => x.Email.CompareTo(y.Email));
         _admins = temp;
         await InvokeAsync(StateHasChanged);
     }

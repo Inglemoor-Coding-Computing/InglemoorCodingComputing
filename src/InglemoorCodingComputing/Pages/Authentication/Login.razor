@@ -1,0 +1,64 @@
+﻿@page "/authentication/login"
+@inject IUserAuthService UserAuthService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using System.Text.Json
+
+<PageTitle>Login</PageTitle>
+
+<div class="min-h-full flex items-start justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="dark:bg-zinc-900 max-w-md space-y-3">
+        <div class="border-2 border-indigo-400 shadow shadow-indigo-500/50 rounded-lg pt-4 px-6">
+            <img class="mx-auto h-20 w-auto pt-3" src="/logo.webp" />
+            <h2 class="mt-6 dark:text-slate-200 text-center text-2xl font-semibold text-slate-900">Sign in to your account</h2>
+            <p class="m-2 text-center text-md dark:text-slate-200 text-slate-900">
+                or 
+                <a class="font-medium text-indigo-500 hover:text-indigo-400" asp-page="/authentication/register">register now</a>
+            </p>
+            <EditForm Model=@request OnValidSubmit=@SubmitAsync class="px-8 pb-8 flex flex-col space-y-2">
+                <DataAnnotationsValidator/>
+                <ValidationSummary/>
+                @if (error is not null)
+                {
+                    <span class="text-rose-500">@error</span>
+                }
+
+                <div>
+				    <label for="email" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Email</label>
+				    <InputText type="text" @bind-Value=request.Email id="email" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"/>
+                </div>
+                <div>
+				    <label asp-for="Input.Password" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Password</label>
+				    <InputText type="password" @bind-Value=request.Password id="password" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="********"/>
+                </div>
+                <div class="flex justify-center">
+                    <button type="submit" class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:shadow-md hover:shadow-indigo-500/50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-xl px-6 py-2 text-center mr-2 mt-2">Log in</button>
+                </div>
+            </EditForm>
+        </div>    
+    </div>
+</div>
+
+@code {
+    private LoginRequest request = new();
+
+    private string? error;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
+    private async Task SubmitAsync()
+    {
+        error = null;
+        var res = await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/login", JsonSerializer.Serialize(request) });
+
+        if (res == 200)
+        {
+            NavigationManager.NavigateTo(ReturnUrl ?? "", true);
+        }
+        else
+            error = "Bad Credentials.";
+    }
+}
