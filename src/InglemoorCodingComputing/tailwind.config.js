@@ -6,7 +6,7 @@ module.exports = {
     theme: {
         extend: {
             fontFamily: {
-                'sans': ['"Comic sans"', ...defaultTheme.fontFamily.sans],
+                'sans': ['"Comic Sans"', ...defaultTheme.fontFamily.sans],
                 'code': ['"Cascadia Code"']
             },
         },
