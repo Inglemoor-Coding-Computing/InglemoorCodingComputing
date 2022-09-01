@@ -1,15 +1,15 @@
 global using System.ComponentModel.DataAnnotations;
 global using System.Text;
+global using Azure.Storage.Blobs;
 global using InglemoorCodingComputing.Models;
 global using InglemoorCodingComputing.Services;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.Azure.Cosmos;
+global using Microsoft.AspNetCore.Components;
+global using Microsoft.AspNetCore.Components.Web;
+global using Microsoft.AspNetCore.Authentication.Cookies;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.Azure.Cosmos;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
 
 async Task<CosmosClient> ConfigureCosmos(IConfigurationSection config)
 {
@@ -23,6 +23,18 @@ async Task<CosmosClient> ConfigureCosmos(IConfigurationSection config)
     return cosmos;
 }
 
+BlobServiceClient ConfigureBlob(IConfigurationSection config)
+{
+    BlobServiceClient blobClient = new(config["ConnStr"]);
+    string[] clients = { "static" };
+    foreach (var client in clients)
+        blobClient.GetBlobContainerClient(client).CreateIfNotExists();
+    return blobClient;
+}
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
@@ -35,13 +47,16 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton(x => ConfigureCosmos(x.GetService<IConfiguration>()!.GetSection("Cosmos")).Result);
+builder.Services.AddSingleton(x => ConfigureBlob(x.GetService<IConfiguration>()!.GetSection("BlobStorage")));
 builder.Services.AddSingleton<IUserAuthService, UserAuthService>();
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
+builder.Services.AddSingleton<IStaticResourceService, StaticResourceService>();
 builder.Services.AddSingleton(_ =>
 {
     Ganss.XSS.HtmlSanitizer x = new();
     x.AllowedAttributes.Add("class");
+    x.AllowedAttributes.Add("id");
     return x;
 });
 builder.Services.AddScoped<IThemeService, ThemeService>();

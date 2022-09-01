@@ -1,5 +1,7 @@
 namespace InglemoorCodingComputing.Models;
 
+using System.ComponentModel.DataAnnotations;
+
 public class RegisterRequest
 {
     [Required(AllowEmptyStrings = false)]

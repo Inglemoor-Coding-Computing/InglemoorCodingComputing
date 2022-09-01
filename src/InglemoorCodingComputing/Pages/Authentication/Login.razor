@@ -45,9 +45,22 @@
 
     private string? error;
 
+    [CascadingParameter]
+    protected Task<AuthenticationState> AuthState { get; set; } = default!;
+
     [Parameter]
     [SupplyParameterFromQuery(Name = "returnUrl")]
     public string? ReturnUrl { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && (await AuthState).User.Identity?.IsAuthenticated is true)
+        {
+            // Logout.
+            await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/logout", "" });
+            NavigationManager.NavigateTo(NavigationManager.Uri, true);
+        }
+    }
 
     private async Task SubmitAsync()
     {

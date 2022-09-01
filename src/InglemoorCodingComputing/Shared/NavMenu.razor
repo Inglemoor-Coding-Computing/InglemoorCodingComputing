@@ -34,7 +34,9 @@
                 </a>
                 <div class="hidden sm:block sm:ml-6">
                     <div class="flex space-x-4">
-                        <NavLink href="about" ActiveClass="!border-indigo-500" class="text-slate-900 dark:text-slate-300 text-base transition duration-150 border-b-4 px-2 py-2 text-sm font-semibold border-transparent hover:border-indigo-500">About</NavLink>
+                        <!--
+                            <NavLink href="about" ActiveClass="!border-indigo-500" class="text-slate-900 dark:text-slate-300 text-base transition duration-150 border-b-4 px-2 py-2 text-sm font-semibold border-transparent hover:border-indigo-500">About</NavLink>
+                        -->
                         <NavLink href="meetings" ActiveClass="!border-indigo-500" class="text-slate-900 dark:text-slate-300 text-base transition duration-150 border-b-4 px-2 py-2 text-sm font-semibold border-transparent hover:border-indigo-500">Meetings</NavLink>
                         <NavLink href="resources" ActiveClass="!border-indigo-500" class="text-slate-900 dark:text-slate-300 text-base transition duration-150 border-b-4 px-2 py-2 text-sm font-semibold border-transparent hover:border-indigo-500">Resources</NavLink>
                         <AuthorizeView Roles="Admin">
@@ -50,7 +52,7 @@
                             <a href="authentication/register" class="inline-flex items-center whitespace-nowrap rounded-xl bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/50 px-3 py-1 text-white">Sign up</a>
                         </NotAuthorized>
                         <Authorized>
-                            <a href="authentication/logout" class="inline-flex items-center whitespace-nowrap rounded-xl bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/50 px-3 py-1 text-white">Sign out</a>
+                            <LogoutButton Class="inline-flex items-center whitespace-nowrap rounded-xl bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/50 px-3 py-1 text-white">Sign out</LogoutButton>
                         </Authorized>
                     </AuthorizeView>
 

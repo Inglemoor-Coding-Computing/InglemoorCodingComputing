@@ -5,12 +5,12 @@
 
 @code {
     [CascadingParameter]
-    protected Task<AuthenticationState> AuthStat { get; set; } = default!;
+    protected Task<AuthenticationState> AuthState { get; set; } = default!;
 
     protected async override Task OnInitializedAsync()
     {
         base.OnInitialized();
-        var user = (await AuthStat).User;
+        var user = (await AuthState).User;
         var id = user.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (user is null || !(user.Identity?.IsAuthenticated ?? false) || id is null || !await UserAuthService.HasAdminAsync(Guid.Parse(id)))

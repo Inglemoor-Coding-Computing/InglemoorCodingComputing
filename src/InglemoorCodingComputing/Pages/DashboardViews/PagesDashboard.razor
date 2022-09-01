@@ -56,7 +56,7 @@
             Contents: <br/>
             <div class="flex">
                 <textarea class="whitespace-pre break-normal overflow-x-scroll w-1/2 h-96 font-code rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500" aria-hidden="true" @bind=Content @bind:event="oninput"/>
-                <div class="prose prose-pre:p-0 prose-pre:bg-white prose-pre:rounded-none prose-pre:font-code dark:prose-invert max-w-none w-1/2 rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500">
+                <div class="prose prose-h1:font-semibold prose-pre:p-0 prose-pre:bg-white prose-pre:rounded-none prose-pre:font-code dark:prose-invert max-w-none w-1/2 rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500">
                     @if (loading)
                     {
                         <div class="justify-self-center flex justify-center pt-5">
@@ -175,18 +175,26 @@
                     finalRoute = null;
                     routeInvalid = "Cannot be empty";
                 }
-                else if (Regex.IsMatch(Route, @"[^a-zA-Z0-9+\-\/]", RegexOptions.None, TimeSpan.FromMilliseconds(100)))
+                else if (Regex.IsMatch(Route, @"[^_a-zA-Z0-9+\-\/]", RegexOptions.None, TimeSpan.FromMilliseconds(100)))
                 {
                     finalRoute = null;
                     routeInvalid = "Invalid Characters";
                 }
                 else if (await StaticPageService.FindAsync(Route) is not null)
                 {
-                    finalRoute = $"{NavigationManager.BaseUri}page/{Route} -- Existing page will be replaced";
+                    finalRoute =
+                        Route.Length > 0 && Route[0] == '_'
+                        ? "Embed content, not accessible from link -- Existing page will be replaced"
+                        : $"{NavigationManager.BaseUri}page/{Route} -- Existing page will be replaced";
                     willOverwrite = true;
                 }
                 else
-                    finalRoute = $"{NavigationManager.BaseUri}page/{Route}";
+                {
+                    finalRoute = 
+                        Route.Length > 0 && Route[0] == '_'
+                        ? "Embed content, not accessible from link"
+                        : $"{NavigationManager.BaseUri}page/{Route}";
+                }
                 loading2 = false;
             }
             while (queued2);
