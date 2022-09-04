@@ -1,0 +1,22 @@
+﻿@page "/profile"
+@inject IUserStateService UserStateService
+@inject IUserAuthService UserAuthService
+@attribute [Authorize]
+
+<PageTitle>Profile</PageTitle>
+
+@if (user is not null)
+{
+    <div>
+        <h2>Welcome @user?.FirstName @user?.LastName</h2>
+    </div>
+}
+
+@code {
+    private AppUser? user;
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserStateService.CurrentAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+}

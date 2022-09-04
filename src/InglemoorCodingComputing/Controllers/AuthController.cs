@@ -42,7 +42,7 @@ public class AuthController : ControllerBase
         ClaimsIdentity claimsIdentity = new(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         
         _logger.LogInformation($"User with email: '{result.Email}' ({result.Id}) logged in.");
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new(claimsIdentity));
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new(claimsIdentity), new() { IsPersistent = request.RememberMe });
         return Ok();
     }
 

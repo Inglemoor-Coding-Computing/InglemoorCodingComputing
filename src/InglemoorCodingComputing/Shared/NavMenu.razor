@@ -1,42 +1,23 @@
-<nav>
+@inject NavigationManager NavigationManager
+@inject IUserStateService UserStateService
+@implements IDisposable
+
+<nav class="py-2">
     <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-        <div class="relative flex items-center justify-between h-16">
-            <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-                <!-- Mobile menu button-->
-                <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
-                    <span class="sr-only">Open main menu</span>
-                    <!--
-                      Icon when menu is closed.
+        <div class="relative flex items-center justify-between min-h-16">
 
-                      Heroicon name: outline/menu
-
-                      Menu open: "hidden", Menu closed: "block"
-                    -->
-                    <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                    <!--
-                      Icon when menu is open.
-
-                      Heroicon name: outline/x
-
-                      Menu open: "block", Menu closed: "hidden"
-                    -->
-                    <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
             <div class="flex-1 flex items-center justify-center sm:items-stretch justify-start md:justify-center">
-                <a href="/" class="flex-shrink-0 flex items-center">
-                    <img class="h-8 w-auto" src="/logo.webp" alt="Inglemoor Coding Computing club">
-                    <div class="mx-4 font-extrabold text-2xl font-mono text-transparent bg-clip-text bg-gradient-to-r from-amber-400 dark:from-amber-300 to-red-800 dark:to-red-700">Inglemoor Coding & Computing Club</div>
-                </a>
-                <div class="hidden sm:block sm:ml-6">
+                <div class="grow-0 mr-2 my-auto">
+                    <div class="flex items-center">
+                        <button class="flex-none" @onclick="() => navOpen = !navOpen">
+                            <img class="h-10" src="/logo.webp" alt="Inglemoor Coding Computing Club Logo">
+                        </button>
+                        <a href="/" class="mx-4 font-extrabold text-2xl break-words font-mono text-transparent bg-clip-text bg-gradient-to-r from-amber-400 dark:from-amber-300 to-red-800 dark:to-red-700">Inglemoor Coding & Computing Club</a>
+                    </div>
+                </div>
+                <div class="hidden sm:block sm:ml-6 my-auto">
                     <div class="flex space-x-4">
-                        <!--
-                            <NavLink href="about" ActiveClass="!border-indigo-500" class="text-slate-900 dark:text-slate-300 text-base transition duration-150 border-b-4 px-2 py-2 text-sm font-semibold border-transparent hover:border-indigo-500">About</NavLink>
-                        -->
+                        <NavLink href="about" ActiveClass="!border-indigo-500" class="text-slate-900 dark:text-slate-300 text-base transition duration-150 border-b-4 px-2 py-2 text-sm font-semibold border-transparent hover:border-indigo-500">About</NavLink>
                         <NavLink href="meetings" ActiveClass="!border-indigo-500" class="text-slate-900 dark:text-slate-300 text-base transition duration-150 border-b-4 px-2 py-2 text-sm font-semibold border-transparent hover:border-indigo-500">Meetings</NavLink>
                         <NavLink href="resources" ActiveClass="!border-indigo-500" class="text-slate-900 dark:text-slate-300 text-base transition duration-150 border-b-4 px-2 py-2 text-sm font-semibold border-transparent hover:border-indigo-500">Resources</NavLink>
                         <AuthorizeView Roles="Admin">
@@ -45,34 +26,80 @@
                     </div>
                 </div>
                 <ThemeToggle/>
-                <div class="flex flex-nowrap space-x-2 ml-4 font-semibold">
+                <div class="hidden sm:flex flex-nowrap space-x-2 ml-4 my-auto font-semibold h-12">
                     <AuthorizeView>
                         <NotAuthorized>
                             <a href="authentication/login" class="inline-flex items-center whitespace-nowrap rounded-xl border-2 border-indigo-400 hover:border-transparent hover:shadow-lg text-indigo-500 hover:shadow-indigo-300/50 hover:bg-indigo-500 hover:text-white px-3 py-1">Sign in</a>
                             <a href="authentication/register" class="inline-flex items-center whitespace-nowrap rounded-xl bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/50 px-3 py-1 text-white">Sign up</a>
                         </NotAuthorized>
                         <Authorized>
+                            <a class="text-indigo-500 inline-flex items-center whitespace-nowrap hover:underline" href="/profile">
+                                Welcome, @firstName
+                            </a>
                             <LogoutButton Class="inline-flex items-center whitespace-nowrap rounded-xl bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/50 px-3 py-1 text-white">Sign out</LogoutButton>
                         </Authorized>
                     </AuthorizeView>
 
                 </div>
             </div>
-        </div>
-    </div>
+            <!-- Mobile menu, show/hide based on menu state. -->
+            @if (navOpen)
+            {
+                <div class="absolute sm:hidden w-full h-full">
+                    <div class="flex flex-col px-4 pt-2 pb-3 space-y-1 bg-gray-300/95 dark:bg-gray-700/90 rounded-lg ">
+                        <button class="text-slate-900 dark:text-white block pt-2" @onclick="() => navOpen = false">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        <NavLink href="about" ActiveClass="!border-indigo-500" class="block text-slate-900 dark:text-slate-300 text-base transition duration-150 border-b-4 px-2 py-2 text-sm font-semibold border-transparent hover:border-indigo-500">About</NavLink>
+                        <NavLink href="meetings" ActiveClass="!border-indigo-500" class="block text-slate-900 dark:text-slate-300 text-base transition duration-150 border-b-4 px-2 py-2 text-sm font-semibold border-transparent hover:border-indigo-500">Meetings</NavLink>
+                        <NavLink href="resources" ActiveClass="!border-indigo-500" class="block text-slate-900 dark:text-slate-300 text-base transition duration-150 border-b-4 px-2 py-2 text-sm font-semibold border-transparent hover:border-indigo-500">Resources</NavLink>
+                        <AuthorizeView Roles="Admin">
+                            <NavLink href="dashboard" ActiveClass="!border-indigo-500" class="block text-slate-900 dark:text-slate-300 text-base transition duration-150 border-b-4 px-2 py-2 text-sm font-semibold border-transparent hover:border-indigo-500">Dashboard</NavLink>
+                        </AuthorizeView>
+                        <div class="flex pt-2 space-x-2">
+                            <AuthorizeView>
+                                <NotAuthorized>
+                                    <a href="authentication/login" class="inline-flex items-center whitespace-nowrap rounded-xl border-2 border-indigo-400 hover:border-transparent hover:shadow-lg text-indigo-500 hover:shadow-indigo-300/50 hover:bg-indigo-500 hover:text-gray-300 px-3 py-1 bg-white dark:bg-gray-700">Sign in</a>
+                                    <a href="authentication/register" class="inline-flex items-center whitespace-nowrap rounded-xl bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/50 px-3 py-1 text-white">Sign up</a>
+                                </NotAuthorized>
+                                <Authorized>
+                                    <a class="text-indigo-500 inline-flex items-center whitespace-nowrap hover:underline" href="/profile">
+                                        Welcome, @firstName
+                                    </a>
+                                    <LogoutButton Class="inline-flex items-center whitespace-nowrap rounded-xl bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/50 px-3 py-1 text-white">Sign out</LogoutButton>
+                                </Authorized>
+                            </AuthorizeView>
 
-    <!-- Mobile menu, show/hide based on menu state. -->
-    <div class="sm:hidden" id="mobile-menu">
-        <div class="px-2 pt-2 pb-3 space-y-1">
-            <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-            <a href="#" class="bg-gray-900 text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Dashboard</a>
-
-            <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Team</a>
-
-            <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Projects</a>
-
-            <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Calendar</a>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 </nav>
 
+@code {
+    private bool navOpen;
+    private string? firstName;
+    private async void OnLocationChanged(object? _, LocationChangedEventArgs __)
+    {
+        navOpen = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            NavigationManager.LocationChanged += OnLocationChanged;
+            firstName = (await UserStateService.CurrentAsync())?.FirstName;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose() =>
+        NavigationManager.LocationChanged -= OnLocationChanged;
+
+}

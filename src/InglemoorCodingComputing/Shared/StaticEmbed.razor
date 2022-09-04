@@ -27,27 +27,28 @@ else
 
     private bool notFound = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        if (Tag is null) 
+        {
+            notFound = true;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        var page = await StaticPageService.FindAsync(Tag);
+        if (page is null || !page.Live)
+        {
+            notFound = true;
+            Logger.LogError($"Unable to find static content: '{Tag}'");
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        contents = page.Rendered;
+        await InvokeAsync(StateHasChanged);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            if (Tag is null) 
-            {
-                notFound = true;
-                await InvokeAsync(StateHasChanged);
-                return;
-            }
-            var page = await StaticPageService.FindAsync(Tag);
-            if (page is null || !page.Live)
-            {
-                notFound = true;
-                Logger.LogError($"Unable to find static content: '{Tag}'");
-                await InvokeAsync(StateHasChanged);
-                return;
-            }
-            contents = page.Rendered;
-            await InvokeAsync(StateHasChanged);
-        }
         await JSRuntime.InvokeVoidAsync("highlightSnippet");
     }
 }
