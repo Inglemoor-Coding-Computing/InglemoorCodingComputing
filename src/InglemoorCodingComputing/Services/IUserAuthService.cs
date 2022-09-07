@@ -34,18 +34,13 @@ public interface IUserAuthService
     /// <returns></returns>
     Task<bool> RevokeAdminAsync(string email, string key);
 
-    /// <summary>
-    /// Verify token
-    /// </summary>
-    /// <param name="token">Email verification token</param>
-    /// <returns></returns>
-    Task<bool> VerifyEmailAsync(string token);
-
     IAsyncEnumerable<UserAuth> GetAdmins();
 
     bool AdminKeyValid(string key);
 
     Task<bool> HasAdminAsync(Guid id);
+
+    Task<UserAuth?> UserWithEmail(string email);
 
     event EventHandler<Guid>? OnAdminRevoked;
 }

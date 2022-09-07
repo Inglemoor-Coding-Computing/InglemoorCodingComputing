@@ -26,6 +26,8 @@ else
     [Parameter]
     public string? PageRoute { get; set; }
 
+    public string? oldRoute;
+
     private string? contents;
 
     private string? title;
@@ -34,7 +36,7 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender || PageRoute != oldRoute)
         {
             if (PageRoute is null || PageRoute.Length == 0 || PageRoute[0] == '_') 
             {

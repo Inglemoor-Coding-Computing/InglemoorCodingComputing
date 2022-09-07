@@ -26,7 +26,18 @@ public sealed class UserAuthService : IUserAuthService
         _memorySize = int.Parse(configuration["Argon2id:Memory"]);
         _iterations = int.Parse(configuration["Argon2id:Iterations"]);
         _adminKey = configuration["AdminKey"];
-}
+    }
+
+    public async Task<UserAuth?> UserWithEmail(string email)
+    {
+        var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.Email == email).ToFeedIterator();
+        while (iterator.HasMoreResults)
+        {
+            foreach (var item in await iterator.ReadNextAsync())
+                return item;
+        }
+        return null;
+    }
 
     /// <summary>
     /// Authenticates user.
@@ -36,17 +47,9 @@ public sealed class UserAuthService : IUserAuthService
     /// <returns></returns>
     public async Task<UserAuth?> AuthenticateAsync(string email, string password)
     {
-        var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.Email == email).ToFeedIterator();
-        List<UserAuth> userAuth = new();
-        while (iterator.HasMoreResults)
-        {
-            foreach (var item in await iterator.ReadNextAsync())
-                userAuth.Add(item);
-        }
-        if (userAuth.Count == 0)
+        if (await UserWithEmail(email) is not UserAuth user)
             return null;
 
-        var user = userAuth.First();
         var hash = user.Hash;
 
         var testHash = GetHash(password, hash.Salt);
@@ -72,19 +75,12 @@ public sealed class UserAuthService : IUserAuthService
     /// <returns></returns>
     public async Task<UserAuth?> AddUserAsync(string email, string password)
     {
-        var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.Email == email).ToFeedIterator();
-        List<UserAuth> userAuth = new();
-        while (iterator.HasMoreResults)
-        {
-            foreach (var item in await iterator.ReadNextAsync())
-                userAuth.Add(item);
-        }
-        if (userAuth.Count != 0)
+        if (await UserWithEmail(email) is not null)
             return null;
 
         var hash = GetHash(password, out var salt);
         var id = Guid.NewGuid();
-        var user = new UserAuth(id, email, false, Guid.NewGuid().ToString("N"), false, new(hash, salt, _iterations, _parallelism, _memorySize));
+        UserAuth user = new(id, email, false, new(hash, salt, _iterations, _parallelism, _memorySize), null);
         await _container.CreateItemAsync(user, new(id.ToString()));
         return user;
     }
@@ -131,28 +127,6 @@ public sealed class UserAuthService : IUserAuthService
         var newUserAuth = userAuth with { IsAdmin = false };
         await _container.ReplaceItemAsync(newUserAuth, userAuth.Id.ToString(), partitionKey: new(userAuth.Id.ToString()));
         OnAdminRevoked?.Invoke(this, userAuth.Id);
-        return true;
-    }
-
-    public async Task<bool> VerifyEmailAsync(string token)
-    {
-        if (string.IsNullOrEmpty(token))
-            return false;
-
-        var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.VerificationToken == token).ToFeedIterator();
-        List<UserAuth> userAuths = new();
-        while (iterator.HasMoreResults)
-        {
-            foreach (var item in await iterator.ReadNextAsync())
-                userAuths.Add(item);
-        }
-        if (userAuths.Count == 0)
-            return false;
-        
-        var userAuth = userAuths.First();
-
-        var newUserAuth = userAuth with { Verified = true, VerificationToken = null };
-        await _container.ReplaceItemAsync(newUserAuth, userAuth.Id.ToString(), partitionKey: new(userAuth.Id.ToString()));
         return true;
     }
 

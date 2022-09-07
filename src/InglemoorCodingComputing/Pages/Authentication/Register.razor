@@ -1,6 +1,11 @@
 ﻿@page "/authentication/register"
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject IUserAuthService UserAuthService
+@inject IUserService UserService
+@inject IEmailService EmailService
+@inject ILogger<Register> Logger
+@using System.Security.Cryptography
 @using System.Text.Json
 
 <PageTitle>Register</PageTitle>
@@ -9,59 +14,76 @@
     <div class="dark:bg-zinc-900 max-w-md space-y-3">
         <div class="border-2 border-indigo-400 shadow shadow-indigo-500/50 rounded-lg pt-4 px-6">
             <img class="mx-auto h-20 w-auto pt-3" src="/logo.webp" />
-            <h2 class="mt-6 dark:text-slate-200 text-center text-2xl font-semibold text-slate-900">Sign up</h2>
-            <p class="m-2 text-center text-md dark:text-slate-200 text-slate-900">
-                or 
-                <a class="font-medium text-indigo-500 hover:text-indigo-400" href="/authentication/register">sign in to your account</a>
-            </p>
-            <EditForm Model=@request OnValidSubmit=@SubmitAsync class="px-8 pb-8 flex flex-col space-y-2">
-                <DataAnnotationsValidator/>
-                <ValidationSummary/>
-                @if (error is not null)
-                {
-                    <span class="text-rose-500">@error</span>
-                }
+            @if (token is null)
+            {
+                <h2 class="mt-6 dark:text-slate-200 text-center text-2xl font-semibold text-slate-900">Sign up</h2>
+                <p class="m-2 text-center text-md dark:text-slate-200 text-slate-900">
+                    or 
+                    <a class="font-medium text-indigo-500 hover:text-indigo-400" href="/authentication/register">sign in to your account</a>
+                </p>
+                <EditForm Model=@request OnValidSubmit=@SubmitAsync class="px-8 pb-8 flex flex-col space-y-2">
+                    <DataAnnotationsValidator/>
+                    <ValidationSummary/>
+                    @if (error is not null)
+                    {
+                        <span class="text-rose-500">@error</span>
+                    }
 
-                <div class="flex space-x-2">
-                    <div>
-				        <label for="firstName" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">First Name</label>
-				        <InputText @bind-Value=request.FirstName id="firstname" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"/>
+                    <div class="flex space-x-2">
+                        <div>
+				            <label for="firstName" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">First Name</label>
+				            <InputText @bind-Value=request.FirstName id="firstname" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"/>
+                        </div>
+                        <div>
+				            <label for="lastName" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Last Name</label>
+				            <InputText @bind-Value=request.LastName id="lastname" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"/>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <div>
+				            <label for="gradeLevel" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Grade</label>
+				            <InputNumber type="text" @bind-Value=request.GradeLevel id="gradelevel" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="9"/>
+                        </div>
+                        <div>
+				            <label for="email" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Email</label>
+				            <InputText @bind-Value=request.Email id="email" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
+                        </div>
                     </div>
                     <div>
-				        <label for="lastName" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Last Name</label>
-				        <InputText @bind-Value=request.LastName id="lastname" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"/>
+				        <label for="password" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Password</label>
+				        <InputText type="password" @bind-Value=request.Password id="password" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="********"/>
                     </div>
-                </div>
-                <div class="flex space-x-2">
-                    <div>
-				        <label for="gradeLevel" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Grade</label>
-				        <InputNumber type="text" @bind-Value=request.GradeLevel id="gradelevel" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="9"/>
+                    <div class="flex justify-center">
+                        @if (disabled)
+                        {
+                            <button disabled type="submit" class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:shadow-md hover:shadow-indigo-500/50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-xl px-6 py-2 text-center mr-2 mt-2">Register</button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:shadow-md hover:shadow-indigo-500/50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-xl px-6 py-2 text-center mr-2 mt-2">Register</button>
+                        }
                     </div>
-                    <div>
-				        <label for="email" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Email</label>
-				        <InputText @bind-Value=request.Email id="email" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
-                    </div>
-                </div>
-                <div>
-				    <label for="password" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Password</label>
-				    <InputText type="password" @bind-Value=request.Password id="password" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="********"/>
-                </div>
-                <div class="flex justify-center">
-                    @if (disabled)
+                </EditForm>
+            }
+            else
+            {
+                <div class="px-8 pb-8 flex flex-col space-y-2">
+	                <label for="token" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Code sent to @request.Email</label>
+                    <input @bind=inputToken id="token" class="focus:outline-none x-3 bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="code"/>
+                    <button @onclick=Create class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:shadow-md hover:shadow-indigo-500/50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-xl px-6 py-2 text-center mr-2 mt-2">Create Account</button>
+                    @if (error is not null)
                     {
-                        <button disabled type="submit" class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:shadow-md hover:shadow-indigo-500/50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-xl px-6 py-2 text-center mr-2 mt-2">Register</button>
-                    }
-                    else
-                    {
-                        <button type="submit" class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:shadow-md hover:shadow-indigo-500/50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-xl px-6 py-2 text-center mr-2 mt-2">Register</button>
+                        <span class="text-rose-500">@error</span>
                     }
                 </div>
-            </EditForm>
+            }
         </div>
     </div>
 </div>
 
 @code {
+    private string? token;
+    private string? inputToken;
     private string? error;
 
     private bool disabled;
@@ -72,11 +94,52 @@
     {
         disabled = true;
         error = null;
-        var res = await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/register", JsonSerializer.Serialize(request) });
-
-        if (res == 200)
-            NavigationManager.NavigateTo("authentication/register-success", true);
-        else
+        if (await UserAuthService.UserWithEmail(request.Email) is not null)
             error = "Email in use.";
+        else
+        {
+            token = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
+            // Send email, or die trying... but don't tell the user that
+            try
+            {
+                EmailService.Send(request.Email, "Confirm email for Inglemoor Coding & Computing Club", $"Hi {request.FirstName},\nYour verifcation code is \"{token}\".\nThank You");
+            }
+            catch
+            {
+                Logger.LogError($"User registration confirmation email for '{request.Email}' failed to send");
+            }
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Create()
+    {
+        if (inputToken == token && await UserAuthService.AddUserAsync(request.Email, request.Password) is UserAuth userAuth)
+        {
+            // Create user
+            await UserService.CreateUser(new()
+            {
+                Id = userAuth.Id,
+                Email = request.Email,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                GraduationYear = AppUser.GradeLevelToGraduationYear(request.GradeLevel),
+                CreatedDate = DateTime.UtcNow,
+            });
+
+            Logger.LogError($"User '{request.FirstName} {request.LastName}' ({userAuth.Id}) registered.");
+
+            // in theory we could use the same registration request as a login request but that might cause issues down the line.
+            LoginRequest login = new() 
+            { 
+                Email = request.Email, 
+                Password = request.Password 
+            };
+            _ = await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/login", JsonSerializer.Serialize(login) });
+
+            NavigationManager.NavigateTo(NavigationManager.BaseUri, true);
+        }
+        else
+            error = "Invalid Code";
     }
 }
