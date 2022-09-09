@@ -15,35 +15,32 @@
     <h4>Create Meeting</h4>
     <div>
         <EditForm Model="@creation" OnValidSubmit="@CreateAsync" class="flex flex-col space-y-3 rounded-2xl border border-gray-300 p-4 w-80">
-            <DataAnnotationsValidator/>
             <label>
                 Name:
-                <InputText class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1" id="name" @bind-Value="creation.Name"/>
+                <InputText class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1" id="name" @bind-Value="creation.Name" />
             </label>
             <label>
                 Details (optional):<br/>
-                <textarea class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1" id="details" @bind="creation.Details"/>
+                <textarea class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1" id="details" @bind="creation.Details" />
             </label>
             <label>
                 Month/Day<br/>
-                <InputNumber class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1 w-10" id="month" @bind-Value="creation.Month"/>
+                <InputNumber class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1 w-10" id="month" @bind-Value="creation.Month" />
                 /
-                <InputNumber class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1 w-10" id="day" @bind-Value="creation.Day"/>
+                <InputNumber class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1 w-10" id="day" @bind-Value="creation.Day" />
             </label>
             <label>
                 Start Time:
-                <InputText class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1 w-24" id="start" @bind-Value="creation.StartTime"/>
+                <InputText class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1 w-24" id="start" @bind-Value="creation.StartTime" />
             </label>
             <label>
                 End Time:
-                <InputText class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1 w-24" id="end" @bind-Value="creation.EndTime"/>
+                <InputText class="focus:outline-none rounded-lg border border-indigo-500 dark:bg-zinc-800 px-2 py-1 w-24" id="end" @bind-Value="creation.EndTime" />
             </label>
             <div class="text-rose-500">
+                <DataAnnotationsValidator />
                 <ValidationSummary />
-                @if (!string.IsNullOrWhiteSpace(error))
-                {
-                    <span class="text-rose-500">@error</span>
-                }
+                @error
             </div>
             <button class="bg-indigo-500 rounded-md" type="submit">Create</button>
         </EditForm>

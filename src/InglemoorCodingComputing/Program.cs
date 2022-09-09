@@ -52,6 +52,7 @@ builder.Services.AddSingleton<IUserAuthService, UserAuthService>();
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddSingleton<IStaticResourceService, StaticResourceService>();
+builder.Services.AddSingleton<UserLogoutManager>();
 builder.Services.AddSingleton(_ =>
 {
     Ganss.XSS.HtmlSanitizer x = new();

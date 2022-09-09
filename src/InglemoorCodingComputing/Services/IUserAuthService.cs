@@ -42,5 +42,7 @@ public interface IUserAuthService
 
     Task<UserAuth?> UserWithEmail(string email);
 
+    Task ChangePasswordAsync(UserAuth userAuth, string password);
+
     event EventHandler<Guid>? OnAdminRevoked;
 }

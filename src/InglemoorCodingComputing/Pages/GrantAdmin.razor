@@ -52,7 +52,7 @@
         else
         {
             <div class="relative">
-                <input @bind-value="key" type="@(viewKey ? "text" : "password")" class="border-2 border-indigo-500 rounded-lg p-2 text-slate-900 dark:text-white dark:bg-slate-700 focus:outline-none" placeholder="admin key"/>
+                <input @bind-value="key" type="@(viewKey ? "text" : "password")" class="font-mono border-2 border-indigo-500 rounded-lg p-2 text-slate-900 dark:text-white dark:bg-slate-700 focus:outline-none" placeholder="admin key"/>
                 <button @onclick="@(() => {viewKey = !viewKey; StateHasChanged(); })" class="absolute inset-y-0 right-0 pr-3 flex items-center leading-5">
                     @if(viewKey)
                     {

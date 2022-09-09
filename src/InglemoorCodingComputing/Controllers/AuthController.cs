@@ -11,15 +11,11 @@ using System.Security.Claims;
 public class AuthController : ControllerBase
 {
     private readonly IUserAuthService _userAuthService;
-    private readonly IUserService _userService;
-    private readonly IEmailService _emailService;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IUserAuthService userAuthService, IUserService userService, IEmailService emailService, ILogger<AuthController> logger)
+    public AuthController(IUserAuthService userAuthService, ILogger<AuthController> logger)
     {
         _userAuthService = userAuthService;
-        _userService = userService;
-        _emailService = emailService;
         _logger = logger;
     }
 
@@ -27,7 +23,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> LoginAsync([FromBody]LoginRequest request)
     {
         await HttpContext.SignOutAsync();
-        var result = await _userAuthService.AuthenticateAsync(request.Email, request.Password);
+        var result = await _userAuthService.AuthenticateAsync(request.Email.Trim(), request.Password);
         if (result is null)
             return BadRequest("Invalid Credentials.");
 

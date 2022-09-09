@@ -1,9 +1,14 @@
 ﻿@inject IJSRuntime JSRuntime
+@inject UserLogoutManager UserLogoutManager
 @inject NavigationManager NavigationManager
+@using System.Security.Claims
 
 <button class=@Class @onclick=LogoutAsync>@ChildContent</button>
 
 @code {
+    [CascadingParameter]
+    protected Task<AuthenticationState> AuthState { get; set; } = default!;
+
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
@@ -17,6 +22,10 @@
     {
         // Logout.
         await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/logout", "" });
+        
+        if ((await AuthState).User.FindFirstValue(ClaimTypes.NameIdentifier) is string id)
+            UserLogoutManager.Logout(Guid.Parse(id));
+        
         NavigationManager.NavigateTo(ReturnUrl ?? NavigationManager.BaseUri, true);
     }
 }

@@ -161,4 +161,11 @@ public sealed class UserAuthService : IUserAuthService
         var item = await _container.ReadItemAsync<UserAuth>(id.ToString(), new(id.ToString()));
         return item.Resource.IsAdmin;
     }
+
+    public async Task ChangePasswordAsync(UserAuth userAuth, string password)
+    {
+        var newHash = GetHash(password, out var newSalt);
+        var newUser = userAuth with { Hash = new(newHash, newSalt, _iterations, _parallelism, _memorySize) };
+        await _container.ReplaceItemAsync(newUser, userAuth.Id.ToString(), new(userAuth.Id.ToString()));
+    }
 }

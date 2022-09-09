@@ -7,8 +7,41 @@
 
 @if (user is not null)
 {
-    <div>
-        <h2>Welcome @user?.FirstName @user?.LastName</h2>
+    <div class="sm:w-3/4 mx-auto pt-2 text-slate-900 dark:text-white flex flex-col space-y-3">
+        <h2 class="text-center text-3xl font-semibold">@user?.FirstName @user?.LastName @user?.StudentNumber</h2>
+    
+        <div class="mx-auto">
+            <h4 class="text-lg">User info:</h4>
+            <div class="border-2 border-indigo-500 rounded-lg p-4 mt-2 inline-block w-fit flex flex-col space-y-1">
+                <div>
+                    <span class="font-semibold">
+                        Name:
+                    </span>
+                    @user?.FirstName @user?.LastName @user?.StudentNumber
+                    
+                    @if (user?.StudentNumber is not null)
+                    {
+                        <span>(@user?.StudentNumber)</span>
+                    }
+                </div>
+                <div>
+                    <span class="font-semibold">
+                        Email:
+                    </span>
+                    @user?.Email
+                    <a class="text-indigo-500 hover:underline">Change Email</a>
+                </div>
+                <div>
+                    <span class="font-semibold">Password: </span>
+                    <a href="/authentication/change-password" class="text-indigo-500 hover:underline">Change Password</a>
+                </div>
+                <div>
+                    <span class="font-semibold">Grade: </span>
+                    @AppUser.GraduationYearToGradeLevel(user?.GraduationYear ?? 0)
+                    (class of @user?.GraduationYear)
+                </div>
+            </div>
+        </div>
     </div>
 }
 

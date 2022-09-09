@@ -37,4 +37,7 @@ public record AppUser
 
     public static int GradeLevelToGraduationYear(int grade) =>
         12 - grade + AcademicYear;
+
+    public static int GraduationYearToGradeLevel(int year) =>
+        12 + AcademicYear - year;
 }

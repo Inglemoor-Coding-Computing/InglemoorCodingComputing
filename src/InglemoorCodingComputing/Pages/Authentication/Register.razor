@@ -51,7 +51,7 @@
                     </div>
                     <div>
 				        <label for="password" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Password</label>
-				        <InputText type="password" @bind-Value=request.Password id="password" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="********"/>
+				        <InputText type="password" @bind-Value=request.Password id="password" class="font-mono focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="********"/>
                     </div>
                     <div class="flex justify-center">
                         @if (disabled)
@@ -94,19 +94,18 @@
     {
         disabled = true;
         error = null;
-        if (await UserAuthService.UserWithEmail(request.Email) is not null)
+        if (await UserAuthService.UserWithEmail(request.Email.Trim()) is not null)
             error = "Email in use.";
         else
         {
             token = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
-            // Send email, or die trying... but don't tell the user that
             try
             {
-                EmailService.Send(request.Email, "Confirm email for Inglemoor Coding & Computing Club", $"Hi {request.FirstName},\nYour verifcation code is \"{token}\".\nThank You");
+                EmailService.Send(request.Email.Trim(), "Confirm email for Inglemoor Coding & Computing Club", $"Hi {request.FirstName},\nYour verifcation code is \"{token}\".\nThank You");
             }
             catch
             {
-                Logger.LogError($"User registration confirmation email for '{request.Email}' failed to send");
+                Logger.LogError($"User registration confirmation email for '{request.Email.Trim()}' failed to send");
             }
         }
         await InvokeAsync(StateHasChanged);
@@ -114,13 +113,13 @@
 
     private async Task Create()
     {
-        if (inputToken == token && await UserAuthService.AddUserAsync(request.Email, request.Password) is UserAuth userAuth)
+        if (inputToken == token && await UserAuthService.AddUserAsync(request.Email.Trim(), request.Password) is UserAuth userAuth)
         {
             // Create user
             await UserService.CreateUser(new()
             {
                 Id = userAuth.Id,
-                Email = request.Email,
+                Email = request.Email.Trim(),
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 GraduationYear = AppUser.GradeLevelToGraduationYear(request.GradeLevel),

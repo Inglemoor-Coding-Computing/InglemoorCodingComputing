@@ -1,0 +1,29 @@
+﻿@inject UserLogoutManager UserLogoutManager
+@inject NavigationManager NavigationManager
+@implements IDisposable
+@using System.Security.Claims
+
+@code {
+    [CascadingParameter]
+    protected Task<AuthenticationState> AuthState { get; set; } = default!;
+
+    public async void OnLogout(Guid id)
+    {
+        var user = (await AuthState).User;
+        if (user.Identity?.IsAuthenticated is true &&
+            user.FindFirstValue(ClaimTypes.NameIdentifier) is string userId && 
+            Guid.Parse(userId) == id)
+        {
+            NavigationManager.NavigateTo($"authentication/login", true);
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+            UserLogoutManager.UserLoggedOut += OnLogout;
+    }
+
+    public void Dispose() =>
+        UserLogoutManager.UserLoggedOut -= OnLogout;
+}
