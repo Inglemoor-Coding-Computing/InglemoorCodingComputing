@@ -1,22 +1,22 @@
 @inherits LayoutComponentBase
 
 <AuthCheck />
-<div class="flex flex-col h-screen bg-white dark:bg-zinc-900 inset-0">
+<div class="inset-0 flex flex-col h-screen bg-white dark:bg-zinc-900">
     <div>
         <NavMenu />
     </div>
 
     <main class="flex-grow">
-        <article class="px-4 h-full">
+        <article class="h-full px-4">
             @Body
         </article>
     </main>
     
-    <footer class="text-slate-900 dark:text-slate-300 flex flex-col justify-center">
-        <div class="relative flex py-5 items-center">
-            <div class="flex-grow border-t border-gray-400 mx-4"></div>
-            <span class="flex-shrink text-gray-400 text-sm">&copy; @DateTime.Now.Year Inglemoor Coding & Computing Club </span>
-            <div class="flex-grow border-t border-gray-400 mx-4"></div>
+    <footer class="flex flex-col justify-center text-slate-900 dark:text-slate-300">
+        <div class="relative flex items-center py-5">
+            <div class="flex-grow mx-4 border-t border-gray-400"></div>
+            <span class="flex-shrink text-sm text-gray-400">&copy; @DateTime.Now.Year Inglemoor Coding & Computing Club </span>
+            <div class="flex-grow mx-4 border-t border-gray-400"></div>
         </div>
     </footer>
 </div>

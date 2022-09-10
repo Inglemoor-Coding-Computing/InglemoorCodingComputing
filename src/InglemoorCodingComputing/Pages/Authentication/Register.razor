@@ -10,28 +10,28 @@
 
 <PageTitle>Register</PageTitle>
 
-<div class="min-h-full flex items-start justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="dark:bg-zinc-900 max-w-md space-y-3">
-        <div class="border-2 border-indigo-400 shadow shadow-indigo-500/50 rounded-lg pt-4 px-6">
-            <img class="mx-auto h-20 w-auto pt-3" src="/logo.webp" />
+<div class="flex items-start justify-center min-h-full px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-md space-y-3 dark:bg-zinc-900">
+        <div class="px-6 pt-4 border-2 border-indigo-400 rounded-lg shadow shadow-indigo-500/50">
+            <img class="w-auto h-20 pt-3 mx-auto" src="/logo.webp" />
             @if (token is null)
             {
-                <h2 class="mt-6 dark:text-slate-200 text-center text-2xl font-semibold text-slate-900">Sign up</h2>
+                <h2 class="mt-6 text-2xl font-semibold text-center dark:text-slate-200 text-slate-900">Sign up</h2>
                 <p class="m-2 text-center text-md dark:text-slate-200 text-slate-900">
                     or 
                     <a class="font-medium text-indigo-500 hover:text-indigo-400" href="/authentication/register">sign in to your account</a>
                 </p>
 
                 <div class="py-2">
-                    <a href="/api/auth/login-google" class="mx-auto w-56 dark:text-gray-200 flex bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border dark:border-gray-900 h-12 rounded-full">
+                    <a href="/api/auth/login-google" class="flex w-56 h-12 mx-auto bg-white border rounded-full dark:text-gray-200 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 dark:border-gray-900">
                         <img class="p-2" src="/png/google-logo.png"/>
                         <p class="flex items-center text-slate-900 dark:text-slate-200">Continue with Google</p>
                     </a>
                 </div>
 
-                <p class="m-4 font-semibold text-center text-lg dark:text-slate-200 text-slate-900">Register with email</p>
+                <p class="m-4 text-lg font-semibold text-center dark:text-slate-200 text-slate-900">Register with email</p>
 
-                <EditForm Model=@request OnValidSubmit=@SubmitAsync class="px-8 pb-8 flex flex-col space-y-2">
+                <EditForm Model=@request OnValidSubmit=@SubmitAsync class="flex flex-col px-8 pb-8 space-y-2">
                     <DataAnnotationsValidator/>
                     <ValidationSummary/>
                     @if (error is not null)
@@ -41,46 +41,46 @@
 
                     <div class="flex space-x-2">
                         <div>
-				            <label for="firstName" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">First Name</label>
+				            <label for="firstName" class="block mb-1 text-sm font-medium text-slate-900 dark:text-gray-300">First Name</label>
 				            <InputText @bind-Value=request.FirstName id="firstname" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"/>
                         </div>
                         <div>
-				            <label for="lastName" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Last Name</label>
+				            <label for="lastName" class="block mb-1 text-sm font-medium text-slate-900 dark:text-gray-300">Last Name</label>
 				            <InputText @bind-Value=request.LastName id="lastname" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"/>
                         </div>
                     </div>
                     <div class="flex space-x-2">
                         <div>
-				            <label for="gradeLevel" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Grade</label>
+				            <label for="gradeLevel" class="block mb-1 text-sm font-medium text-slate-900 dark:text-gray-300">Grade</label>
 				            <InputNumber type="text" @bind-Value=request.GradeLevel id="gradelevel" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="9"/>
                         </div>
                         <div>
-				            <label for="email" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Email</label>
+				            <label for="email" class="block mb-1 text-sm font-medium text-slate-900 dark:text-gray-300">Email</label>
 				            <InputText @bind-Value=request.Email id="email" class="focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
                         </div>
                     </div>
                     <div>
-				        <label for="password" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Password</label>
+				        <label for="password" class="block mb-1 text-sm font-medium text-slate-900 dark:text-gray-300">Password</label>
 				        <InputText type="password" @bind-Value=request.Password id="password" class="font-mono focus:outline-none bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="********"/>
                     </div>
                     <div class="flex justify-center">
                         @if (disabled)
                         {
-                            <button disabled type="submit" class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:shadow-md hover:shadow-indigo-500/50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-xl px-6 py-2 text-center mr-2 mt-2">Register</button>
+                            <button disabled type="submit" class="px-6 py-2 mt-2 mr-2 font-medium text-center text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:shadow-md hover:shadow-indigo-500/50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 rounded-xl">Register</button>
                         }
                         else
                         {
-                            <button type="submit" class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:shadow-md hover:shadow-indigo-500/50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-xl px-6 py-2 text-center mr-2 mt-2">Register</button>
+                            <button type="submit" class="px-6 py-2 mt-2 mr-2 font-medium text-center text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:shadow-md hover:shadow-indigo-500/50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 rounded-xl">Register</button>
                         }
                     </div>
                 </EditForm>
             }
             else
             {
-                <div class="px-8 pb-8 flex flex-col space-y-2">
-	                <label for="token" class="text-sm font-medium text-slate-900 block mb-1 dark:text-gray-300">Code sent to @request.Email</label>
+                <div class="flex flex-col px-8 pb-8 space-y-2">
+	                <label for="token" class="block mb-1 text-sm font-medium text-slate-900 dark:text-gray-300">Code sent to @request.Email</label>
                     <input @bind=inputToken id="token" class="focus:outline-none x-3 bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="code"/>
-                    <button @onclick=Create class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:shadow-md hover:shadow-indigo-500/50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-xl px-6 py-2 text-center mr-2 mt-2">Create Account</button>
+                    <button @onclick=Create class="px-6 py-2 mt-2 mr-2 font-medium text-center text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:shadow-md hover:shadow-indigo-500/50 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 rounded-xl">Create Account</button>
                     @if (error is not null)
                     {
                         <span class="text-rose-500">@error</span>

@@ -1,8 +1,8 @@
 ﻿namespace InglemoorCodingComputing.Models;
 
-public enum Theme 
-{ 
-    System, 
-    Light, 
+public enum Theme
+{
+    System,
+    Light,
     Dark
 }

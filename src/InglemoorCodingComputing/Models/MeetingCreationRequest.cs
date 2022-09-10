@@ -4,20 +4,20 @@ using System.Diagnostics.CodeAnalysis;
 
 public class MeetingCreationRequest
 {
-    [Required(AllowEmptyStrings=false)]
+    [Required(AllowEmptyStrings = false)]
     public string Name { get; set; } = string.Empty;
-    
+
     public string Details { get; set; } = string.Empty;
 
     [Required]
     public int? Month { get; set; }
-    
+
     [Required]
     public int? Day { get; set; }
 
     [Required]
     public string? StartTime { get; set; }
-    
+
     [Required]
     public string? EndTime { get; set; }
 

@@ -33,7 +33,7 @@ public class MeetingsService : IMeetingsService
         {
             foreach (var x in await iterator.ReadNextAsync())
                 yield return x;
-        }    
+        }
     }
 
     public async Task<Meeting?> NextAsync(DateTime local)
@@ -44,7 +44,7 @@ public class MeetingsService : IMeetingsService
             if (meeting.End > local && (meeting.End - local).Days <= 31)
             {
                 if (next is null || next.End > meeting.End)
-                next = meeting;
+                    next = meeting;
             }
         }
         return next;

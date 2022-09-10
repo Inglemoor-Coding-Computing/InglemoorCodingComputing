@@ -18,7 +18,7 @@ public class RegisterRequest
     public int GradeLevel { get; set; }
 
     [DataType(DataType.Password)]
-    [MinLength(8, ErrorMessage="Password must be at least 8 characters")]
+    [MinLength(8, ErrorMessage = "Password must be at least 8 characters")]
     [Required]
     public string Password { get; set; } = string.Empty;
 }

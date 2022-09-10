@@ -24,6 +24,6 @@ public record Meeting
     public string Details { get; init; } = string.Empty;
 
     public IReadOnlyList<Guid> RegisteredAttendees { get; init; } = Array.Empty<Guid>();
-    
+
     public IReadOnlyList<AttendanceModel> NonRegisteredAttendees { get; init; } = Array.Empty<AttendanceModel>();
 }

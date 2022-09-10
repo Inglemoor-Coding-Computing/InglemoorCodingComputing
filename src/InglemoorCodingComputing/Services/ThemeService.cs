@@ -6,7 +6,7 @@ public class ThemeService : IThemeService
 {
     private readonly ValueTask<IJSObjectReference> _module;
     private Theme _theme;
-    
+
     public ThemeService(IJSRuntime jsRuntime)
     {
         _module = jsRuntime.InvokeAsync<IJSObjectReference>("import", "/js/theme-switcher.js");

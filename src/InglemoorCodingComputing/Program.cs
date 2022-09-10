@@ -65,7 +65,7 @@ builder.Services.AddSingleton(_ =>
 });
 builder.Services.AddScoped<IThemeService, ThemeService>();
 builder.Services.AddScoped<IUserStateService, UserStateService>();
-builder.Services.AddScoped<IMeetingsService, MeetingsService>(); 
+builder.Services.AddScoped<IMeetingsService, MeetingsService>();
 builder.Services.AddScoped<IStaticPageService, StaticPageService>();
 builder.Services.AddScoped<TimeZoneService>();
 

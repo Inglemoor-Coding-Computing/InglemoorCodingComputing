@@ -8,7 +8,7 @@
 <PageTitle>Resources</PageTitle>
 
 <div class="p-3">
-    <h3 class="font-semibold text-3xl dark:text-indigo-300">Resources</h3>
+    <h3 class="text-3xl font-semibold dark:text-indigo-300">Resources</h3>
     <div class="flex flex-col space-y-3">
         <h2 class="font-semibold text-sxl dark:text-indigo-300">Files</h2>
 
@@ -19,14 +19,14 @@
         else
         {
             <label for="name">File name:</label>
-            <input id="name" @bind=name placeholder="@(file?.Name)" class="text-slate-700 dark:text-slate-300 bg-gray-300 dark:bg-slate-700 focus:outline-none rounded-lg px-2 py-1 m-2"/>
+            <input id="name" @bind=name placeholder="@(file?.Name)" class="px-2 py-1 m-2 bg-gray-300 rounded-lg text-slate-700 dark:text-slate-300 dark:bg-slate-700 focus:outline-none"/>
             <InputFile OnChange=LoadFileAsync />
-            <button @onclick=AddFileAsync class="rounded-lg p-2 m-1 text-white bg-indigo-500">Add/Replace file</button>
+            <button @onclick=AddFileAsync class="p-2 m-1 text-white bg-indigo-500 rounded-lg">Add/Replace file</button>
             <Virtualize Items=@files>
-                <div class="py-2 px-3 m-2 flex justify-between bg-gray-100 dark:bg-slate-900 rounded-md">
+                <div class="flex justify-between px-3 py-2 m-2 bg-gray-100 rounded-md dark:bg-slate-900">
                     <a target="_blank" href=@($"{NavigationManager.BaseUri}static/{context}") class="hover:underline">@context</a>
                     <button @onclick="() => DeleteAsync(context)" class="ml-2 text-rose-500 hover:text-gray-100 dark:hover:text-bg-slate-900 hover:bg-rose-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                     </button>

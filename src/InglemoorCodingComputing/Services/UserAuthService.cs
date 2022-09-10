@@ -47,7 +47,7 @@ public sealed class UserAuthService : IUserAuthService
     /// <returns></returns>
     public async Task<UserAuth?> AuthenticateAsync(string email, string password)
     {
-        if (await UserWithEmail(email) is not UserAuth user)
+        if (await UserWithEmail(email) is not UserAuth user || user.Hash is null)
             return null;
 
         var hash = user.Hash;
@@ -56,7 +56,7 @@ public sealed class UserAuthService : IUserAuthService
 
         if (!testHash.SequenceEqual(hash.Hash))
             return null;
-        
+
         if (hash.Hash.Length != _hashSize || hash.Salt.Length != _saltSize || hash.Parallelism != _parallelism || hash.Memory != _memorySize || hash.Iterations != _iterations)
         {
             // Rehash with new parameters

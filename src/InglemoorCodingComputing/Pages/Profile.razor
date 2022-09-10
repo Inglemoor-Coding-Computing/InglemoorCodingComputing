@@ -7,12 +7,12 @@
 
 @if (user is not null)
 {
-    <div class="sm:w-3/4 mx-auto pt-2 text-slate-900 dark:text-white flex flex-col space-y-3">
-        <h2 class="text-center text-3xl font-semibold">@user?.FirstName @user?.LastName</h2>
+    <div class="flex flex-col pt-2 mx-auto space-y-3 sm:w-3/4 text-slate-900 dark:text-white">
+        <h2 class="text-3xl font-semibold text-center">@user?.FirstName @user?.LastName</h2>
     
         <div class="mx-auto">
             <h4 class="text-lg">User info:</h4>
-            <div class="border-2 border-indigo-500 rounded-lg p-4 mt-2 inline-block w-fit flex flex-col space-y-1">
+            <div class="flex flex-col inline-block p-4 mt-2 space-y-1 border-2 border-indigo-500 rounded-lg w-fit">
                 <div>
                     <span class="font-semibold">
                         Name:

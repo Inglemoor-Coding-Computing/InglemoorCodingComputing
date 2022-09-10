@@ -23,7 +23,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> LoginAsync([FromBody]LoginRequest request)
+    public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request)
     {
         await HttpContext.SignOutAsync();
         var result = await _userAuthService.AuthenticateAsync(request.Email.Trim(), request.Password);
@@ -37,7 +37,7 @@ public class AuthController : ControllerBase
         if (result.IsAdmin)
             claims.Add(new(ClaimTypes.Role, "Admin"));
         ClaimsIdentity claimsIdentity = new(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        
+
         _logger.LogInformation($"User with email: '{result.Email}' ({result.Id}) logged in.");
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new(claimsIdentity), new() { IsPersistent = request.RememberMe });
         return Ok();

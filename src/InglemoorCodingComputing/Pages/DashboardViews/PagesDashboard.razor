@@ -14,16 +14,16 @@
 
 <AdminCheck/>
 <div class="p-3">
-    <h3 class="font-semibold text-3xl dark:text-indigo-300">Pages</h3>
+    <h3 class="text-3xl font-semibold dark:text-indigo-300">Pages</h3>
 
-    <h4 class="text-lg py-4 underline">Create Static Page</h4>
+    <h4 class="py-4 text-lg underline">Create Static Page</h4>
     <div class="flex flex-col space-y-3">
         <div class="flex flex-col">
-            <div class="flex align-middle items-center">
+            <div class="flex items-center align-middle">
                 Page route:
-                <input class="rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500" @bind=Route @bind:event="oninput"/>
+                <input class="px-2 py-1 m-1 border border-indigo-500 rounded-md dark:bg-zinc-800" @bind=Route @bind:event="oninput"/>
                 Title:
-                <input class="rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500" @bind=title @bind:event="oninput"/>
+                <input class="px-2 py-1 m-1 border border-indigo-500 rounded-md dark:bg-zinc-800" @bind=title @bind:event="oninput"/>
             </div>
             @if (routeInvalid is not null)
             {
@@ -36,7 +36,7 @@
         </div>
 
         <div class="flex space-x-3 accent-indigo-500">
-            <select @onchange=TypeChanged class="rounded-md p-1 dark:bg-zinc-800">
+            <select @onchange=TypeChanged class="p-1 rounded-md dark:bg-zinc-800">
                 <option value="@nameof(StaticPageType.Markdown)">Markdown</option>
                 <option value="@nameof(StaticPageType.Html)">Html</option>
                 <option value="@nameof(StaticPageType.Text)">Text</option>
@@ -55,12 +55,12 @@
         <div>
             Contents: <br/>
             <div class="flex">
-                <textarea class="whitespace-pre break-normal overflow-x-scroll w-1/2 h-96 font-code rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500" aria-hidden="true" @bind=Content @bind:event="oninput"/>
-                <div class="prose prose-h1:font-semibold prose-pre:p-0 prose-pre:bg-white prose-pre:rounded-none prose-pre:font-code dark:prose-invert max-w-none w-1/2 rounded-md px-2 py-1 m-1 dark:bg-zinc-800 border border-indigo-500">
+                <textarea class="w-1/2 px-2 py-1 m-1 overflow-x-scroll break-normal whitespace-pre border border-indigo-500 rounded-md h-96 font-code dark:bg-zinc-800" aria-hidden="true" @bind=Content @bind:event="oninput"/>
+                <div class="w-1/2 px-2 py-1 m-1 prose border border-indigo-500 rounded-md prose-h1:font-semibold prose-pre:p-0 prose-pre:bg-white prose-pre:rounded-none prose-pre:font-code dark:prose-invert max-w-none dark:bg-zinc-800">
                     @if (loading)
                     {
-                        <div class="justify-self-center flex justify-center pt-5">
-                            <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <div class="flex justify-center pt-5 justify-self-center">
+                            <svg class="w-5 h-5 text-indigo-500 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
@@ -76,9 +76,9 @@
         <button disabled=@Disabled @onclick=CreateAsync class=@($"text-white rounded-lg px-8 py-3 self-center {(Disabled ? "bg-indigo-300" : "bg-indigo-500")}")>@(willOverwrite ? "Update" : "Create")</button>
     </div>
 
-    <h4 class="text-lg pt-4 pb-2 underline">Pages</h4>
+    <h4 class="pt-4 pb-2 text-lg underline">Pages</h4>
     <Virtualize Items=pages>
-        <div class="py-2 px-3 m-2 flex justify-between bg-gray-100 dark:bg-slate-900 rounded-md" @key=context.Id>
+        <div class="flex justify-between px-3 py-2 m-2 bg-gray-100 rounded-md dark:bg-slate-900" @key=context.Id>
             <a target="_blank" class=@($"font-mono font-bold {(context.Live ? "text-emerald-400 dark:text-emerald:600 hover:underline" : "text-rose-500")}") href=@($"page/{context.Path}")>/@context.Path</a>
             <span>@context.Title</span>
             <div class="flex space-x-6">
@@ -88,8 +88,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                     </svg>
                 </button>
-                <button class="text-rose-500 hover:text-white hover:bg-rose-500 rounded-md p-1" @onclick="() => StaticPageService.DeleteAsync(context.Id)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <button class="p-1 rounded-md text-rose-500 hover:text-white hover:bg-rose-500" @onclick="() => StaticPageService.DeleteAsync(context.Id)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
                     </svg>
                 </button>

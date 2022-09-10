@@ -9,7 +9,7 @@ public class UserService : IUserService
     {
         _container = cosmosClient.GetContainer(configuration["Cosmos:DatabaseName"], configuration["Cosmos:UserContainer"]);
     }
-    
+
     public Task CreateUser(AppUser user) =>
         _container.CreateItemAsync(user, partitionKey: new(user.Id.ToString()));
 
