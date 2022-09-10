@@ -85,6 +85,20 @@ public sealed class UserAuthService : IUserAuthService
         return user;
     }
 
+    public async Task<UserAuth?> AddGoogleUserAsync(string email, string googleId)
+    {
+        if (await UserWithEmail(email) is not null)
+            return null;
+
+        var id = Guid.NewGuid();
+        UserAuth user = new(id, email, false, null, null)
+        {
+            GoogleId = googleId,
+        };
+        await _container.CreateItemAsync(user, new(id.ToString()));
+        return user;
+    }
+
     public async Task<bool> GrantAdminAsync(string email, string key)
     {
         if (string.IsNullOrEmpty(_adminKey) || key != _adminKey)
@@ -167,5 +181,16 @@ public sealed class UserAuthService : IUserAuthService
         var newHash = GetHash(password, out var newSalt);
         var newUser = userAuth with { Hash = new(newHash, newSalt, _iterations, _parallelism, _memorySize) };
         await _container.ReplaceItemAsync(newUser, userAuth.Id.ToString(), new(userAuth.Id.ToString()));
+    }
+
+    public async Task<UserAuth?> UserWithGoogleIdAsync(string id)
+    {
+        var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.GoogleId == id).ToFeedIterator();
+        while (iterator.HasMoreResults)
+        {
+            foreach (var item in await iterator.ReadNextAsync())
+                return item;
+        }
+        return null;
     }
 }

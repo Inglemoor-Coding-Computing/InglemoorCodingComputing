@@ -3,8 +3,6 @@ global using System.Text;
 global using Azure.Storage.Blobs;
 global using InglemoorCodingComputing.Models;
 global using InglemoorCodingComputing.Services;
-global using Microsoft.AspNetCore.Components;
-global using Microsoft.AspNetCore.Components.Web;
 global using Microsoft.AspNetCore.Authentication.Cookies;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.Azure.Cosmos;
@@ -39,7 +37,13 @@ builder.Logging.AddConsole();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie()
+    .AddGoogle(gOptions =>
+    {
+        gOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+        gOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

@@ -8,7 +8,7 @@
 @if (user is not null)
 {
     <div class="sm:w-3/4 mx-auto pt-2 text-slate-900 dark:text-white flex flex-col space-y-3">
-        <h2 class="text-center text-3xl font-semibold">@user?.FirstName @user?.LastName @user?.StudentNumber</h2>
+        <h2 class="text-center text-3xl font-semibold">@user?.FirstName @user?.LastName</h2>
     
         <div class="mx-auto">
             <h4 class="text-lg">User info:</h4>
@@ -17,11 +17,11 @@
                     <span class="font-semibold">
                         Name:
                     </span>
-                    @user?.FirstName @user?.LastName @user?.StudentNumber
+                    @user?.FirstName @user?.LastName
                     
                     @if (user?.StudentNumber is not null)
                     {
-                        <span>(@user?.StudentNumber)</span>
+                        <span class="font-sm"> (nsd-@user?.StudentNumber)</span>
                     }
                 </div>
                 <div>

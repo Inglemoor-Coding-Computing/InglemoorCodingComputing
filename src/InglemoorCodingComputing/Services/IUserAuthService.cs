@@ -18,6 +18,8 @@ public interface IUserAuthService
     /// <returns></returns>
     Task<UserAuth?> AddUserAsync(string email, string password);
 
+    Task<UserAuth?> AddGoogleUserAsync(string email, string googleId);
+
     /// <summary>
     /// Gives a user admin role.
     /// </summary>
@@ -41,6 +43,8 @@ public interface IUserAuthService
     Task<bool> HasAdminAsync(Guid id);
 
     Task<UserAuth?> UserWithEmail(string email);
+
+    Task<UserAuth?> UserWithGoogleIdAsync(string id);
 
     Task ChangePasswordAsync(UserAuth userAuth, string password);
 

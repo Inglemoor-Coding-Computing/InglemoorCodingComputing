@@ -1,5 +1,7 @@
 ﻿@inject UserLogoutManager UserLogoutManager
 @inject NavigationManager NavigationManager
+@inject IUserStateService UserStateService
+@inject IJSRuntime JSRuntime
 @implements IDisposable
 @using System.Security.Claims
 
@@ -14,14 +16,23 @@
             user.FindFirstValue(ClaimTypes.NameIdentifier) is string userId && 
             Guid.Parse(userId) == id)
         {
-            NavigationManager.NavigateTo($"authentication/login", true);
+            await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/logout", "" });
+            NavigationManager.NavigateTo(NavigationManager.Uri, true);
         }
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
+        {
             UserLogoutManager.UserLoggedOut += OnLogout;
+            var user = (await AuthState).User;
+            if (user.Identity?.IsAuthenticated is true && await UserStateService.CurrentAsync() is null)
+            {
+                await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/logout", "" });
+                NavigationManager.NavigateTo(NavigationManager.Uri, true);
+            }    
+        }
     }
 
     public void Dispose() =>

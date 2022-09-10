@@ -23,7 +23,14 @@ public class UserStateService : IUserStateService, IDisposable
             else
             {
                 var id = Guid.Parse(auth.User.FindFirstValue(ClaimTypes.NameIdentifier));
-                return await _userService.ReadUser(id);
+                try
+                {
+                    return await _userService.ReadUser(id);
+                }
+                catch
+                {
+                    return null;
+                }
             }
         });
     }
@@ -32,6 +39,29 @@ public class UserStateService : IUserStateService, IDisposable
 
     public Task<AppUser?> CurrentAsync() =>
         current;
+
+    public void Update()
+    {
+        current = Task.Run(async () =>
+        {
+            var auth = await _authenticationStateProvider.GetAuthenticationStateAsync();
+
+            if (auth.User.Identity?.IsAuthenticated is not true)
+                return null;
+            else
+            {
+                var id = Guid.Parse(auth.User.FindFirstValue(ClaimTypes.NameIdentifier));
+                try
+                {
+                    return await _userService.ReadUser(id);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        });
+    }
 
     public void Dispose() =>
         _authenticationStateProvider.AuthenticationStateChanged -= AuthChanged;

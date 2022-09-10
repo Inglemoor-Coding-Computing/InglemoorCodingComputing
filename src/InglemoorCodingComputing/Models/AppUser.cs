@@ -25,6 +25,8 @@ public record AppUser
 
     public static int AcademicYear => ToAcademicYear(DateTime.UtcNow);
 
+    public bool RegistrationIncomplete => GraduationYear == -1;
+
     public static int ToAcademicYear(DateTime dt) =>
         new DateTime(dt.Year, 8, 1) > dt
         ? dt.Year
