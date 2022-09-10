@@ -48,7 +48,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton(x => ConfigureCosmos(x.GetService<IConfiguration>()!.GetSection("Cosmos")).Result);
 builder.Services.AddSingleton(x => ConfigureBlob(x.GetService<IConfiguration>()!.GetSection("BlobStorage")));
@@ -70,6 +69,12 @@ builder.Services.AddScoped<IMeetingsService, MeetingsService>();
 builder.Services.AddScoped<IStaticPageService, StaticPageService>();
 builder.Services.AddScoped<TimeZoneService>();
 
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.CheckConsentNeeded = _ => true;
+    options.MinimumSameSitePolicy = SameSiteMode.None;
+});
+
 var app = builder.Build();
 
 // prewarm services
@@ -89,8 +94,8 @@ else
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
+app.UseCookiePolicy();
 
 app.UseRouting();
 
