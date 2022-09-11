@@ -18,6 +18,9 @@ let output = Environment.CurrentDirectory
 cd [ "src"; "InglemoorCodingComputing"; "src"; "InglemoorCodingComputing" ]
 
 exec "dotnet" "clean"
+
+exec "npx" "tailwindcss -c tailwind.config.js -i Styles/app.css -o wwwroot/tailwind.css --minify"
+
 let result = execR "dotnet" $"publish -c Release --output \"{output}\""
 
 if result = 0 then

@@ -31,7 +31,7 @@ while true do
             |> Seq.where (fun x -> x.Name = "InglemoorCodingComputing.dll")
             |> Seq.head
 
-        exec "dotnet" $"\"{file.FullName}\""
+        exec "sudo" $"-E dotnet \"{file.FullName}\" --urls \"http://*:80;https://*:443\""
     with _ ->
         kill ()
 
