@@ -9,8 +9,11 @@
             <div class="flex items-center justify-start justify-center flex-1 sm:items-stretch md:justify-center">
                 <div class="my-auto mr-2 grow-0">
                     <div class="flex items-center">
-                        <button class="flex-none" @onclick="() => navOpen = !navOpen">
-                            <img class="h-10" src="/logo.webp" alt="Inglemoor Coding Computing Club Logo">
+                        <img class="h-10 hidden sm:block" src="/logo.webp" alt="Inglemoor Coding Computing Club Logo">
+                        <button class="flex-none sm:hidden text-slate-900 dark:text-white px-1" @onclick="() => navOpen = !navOpen">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
                         </button>
                         <a href="/" class="mx-4 font-mono text-2xl font-extrabold text-transparent break-words bg-clip-text bg-gradient-to-r from-amber-400 dark:from-amber-300 to-red-800 dark:to-red-700">Inglemoor Coding & Computing Club</a>
                     </div>
