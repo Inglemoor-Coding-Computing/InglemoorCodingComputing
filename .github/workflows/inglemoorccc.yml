@@ -42,6 +42,13 @@ jobs:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         publish-profile: ${{ secrets.inglemoorccc_FFFF }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    - name: Deploy to Azure Virtual Machine
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_Host }}
+        username: ${{ secrets.SSH_Username }}
+        key: ${{ secrets.SSH_Key }}
+        script: /var/app/deploy.fsx
     - name: Publish Artifacts
       uses: actions/upload-artifact@v1.0.0
       with:
