@@ -8,11 +8,14 @@
 
 @if (showBanner)
 {
-    <div id="cookieConsent" role="alert" class="absolute top-14 left-1/2 -ml-[340px] bg-indigo-300/90 dark:bg-indigo-800/90 text-white rounded-full px-4 py-3">
-        We use cookies to store login info and improve your experience. <a class="underline" href="/privacy">Learn More</a>.
-        <button type="button" class="font-semibold" data-dismiss="alert" aria-label="Close" data-cookie-string="@cookieString">
-            <span aria-hidden="true">Accept</span>
-        </button>
+    <div id="cookieConsent" role="alert" class="fixed inset-x-0 bottom-0">
+        <div class="bg-indigo-300/90 dark:bg-indigo-800/90 text-white rounded-t-xl sm:rounded-t-lg px-4 py-3 flex flex-col text-center text-lg">
+            <h1>We use cookies to store login info and improve your experience. <a class="underline" href="/privacy">Learn More</a></h1>
+            
+            <button type="button" class="font-semibold p-2" data-dismiss="alert" aria-label="Close" data-cookie-string="@cookieString">
+                Accept
+            </button>
+        </div>
     </div>
     <script>
         (function () {

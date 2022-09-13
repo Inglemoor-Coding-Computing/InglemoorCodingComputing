@@ -1,3 +1,4 @@
+#!/usr/bin/dotnet fsi
 #load "utils.fsx"
 open Utils
 open System

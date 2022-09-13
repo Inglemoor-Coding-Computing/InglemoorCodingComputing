@@ -1,3 +1,4 @@
+#!/usr/bin/dotnet fsi
 #load "utils.fsx"
 open Utils
 open System
@@ -30,8 +31,10 @@ while true do
             newest.EnumerateFiles()
             |> Seq.where (fun x -> x.Name = "InglemoorCodingComputing.dll")
             |> Seq.head
+        
+        cd ["bin"; newest.Name]
 
-        exec "sudo" $"-E dotnet \"{file.FullName}\" --urls \"http://*:80;https://*:443\""
+        exec "sudo" $"-E dotnet \"{file.FullName}\""
     with _ ->
         kill ()
 
