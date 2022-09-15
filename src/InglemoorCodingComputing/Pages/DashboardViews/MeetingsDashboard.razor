@@ -56,7 +56,7 @@
     <div class="overflow-auto">
         <span class="pt-5">All Meetings:</span>
         <Virtualize Items=@meetings Context="meeting">
-            <MeetingView @key=meeting.Id Meeting=meeting Editable=true/>
+            <MeetingView @key=meeting.Id Meeting=meeting Editable=true OnDelete="async x => { await MeetingsService.DeleteAsync(x.Id); await InvokeAsync(StateHasChanged); }"/>
         </Virtualize>
     </div>
 </div>

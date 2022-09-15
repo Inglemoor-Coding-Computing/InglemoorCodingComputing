@@ -1,5 +1,6 @@
 ﻿namespace InglemoorCodingComputing.Services;
 
+using System.Collections.Concurrent;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 
@@ -48,6 +49,21 @@ public class MeetingsService : IMeetingsService
             }
         }
         return next;
+    }
+
+    private readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
+    public async Task TakeAttendanceAsync(Guid meeting, Guid user)
+    {
+        await _semaphoreSlim.WaitAsync();
+        try
+        {
+            var m = await ReadAsync(meeting);
+            await UpdateAsync(m with { RegisteredAttendees = m.RegisteredAttendees.Append(user).ToList() });
+        }
+        finally
+        {
+            _semaphoreSlim.Release();
+        }
     }
 
     public async Task<Meeting> ReadAsync(Guid id) =>

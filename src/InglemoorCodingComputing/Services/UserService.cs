@@ -1,6 +1,7 @@
 namespace InglemoorCodingComputing.Services;
 
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
 
 public class UserService : IUserService
 {
@@ -23,5 +24,15 @@ public class UserService : IUserService
     {
         var user = await ReadUser(id);
         await UpdateUser(user with { DeletedDate = DateTime.UtcNow });
+    }
+
+    public async IAsyncEnumerable<AppUser> ReadAllUsers()
+    {
+        var iterator = _container.GetItemLinqQueryable<AppUser>().ToFeedIterator();
+        while (iterator.HasMoreResults)
+        {
+            foreach (var item in await iterator.ReadNextAsync())
+                yield return item;
+        }
     }
 }

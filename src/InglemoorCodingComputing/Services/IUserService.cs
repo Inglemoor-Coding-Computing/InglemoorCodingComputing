@@ -6,4 +6,6 @@ public interface IUserService
     Task<AppUser> ReadUser(Guid id);
     Task UpdateUser(AppUser user);
     Task DeleteUser(Guid id);
+
+    IAsyncEnumerable<AppUser> ReadAllUsers();
 }
