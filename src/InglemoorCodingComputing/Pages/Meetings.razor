@@ -50,7 +50,7 @@
         meetings = await MeetingsService.GetMeetingsAsync(AppUser.AcademicYear).ToListAsync();
         meetings.Sort((x, y) => y.Date.CompareTo(x.Date));
         next = await MeetingsService.NextAsync(dt);
-        attendance = next is not null && next.StartTime <= TimeOnly.FromDateTime(dt);
+        attendance = next is not null && next.Date.ToDateTime(next.StartTime) <= dt;
     }
 
     private async void OnChanged(object? _, EventArgs __)

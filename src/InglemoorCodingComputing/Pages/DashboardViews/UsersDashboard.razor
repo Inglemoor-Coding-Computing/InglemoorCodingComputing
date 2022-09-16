@@ -2,6 +2,7 @@
 @layout DashboardLayout
 @inject NavigationManager NavigationManager
 @inject IUserService UserService
+@inject IUserAuthService UserAuthService
 @attribute [Authorize(Roles="Admin")]
 <AdminCheck/>
 

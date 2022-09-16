@@ -1,4 +1,5 @@
 ﻿@inject IUserStateService UserStateService
+@inject IUserService UserService
 @implements IDisposable
 <div class="px-3 sm:px-6 py-4 w-fit my-3 rounded-xl text-slate-900 dark:text-slate-200 bg-gray-100 dark:bg-slate-900 flex align-middle">
     <div>
@@ -26,6 +27,43 @@
                 </Authorized>
             </AuthorizeView>
         }
+        @if (ShowAttendees)
+        {
+            <div class="flex">
+                <button @onclick="() => attendeesOpen = !attendeesOpen" class="p-1 rounded-lg text-slate-900 dark:text-white hover:text-white hover:bg-indigo-500">
+                    @if (attendeesOpen)
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    }
+                </button>
+                <h4 class="text-md">Attendance: @Meeting.RegisteredAttendees.Count</h4>
+            </div>
+            @if (attendeesOpen)
+            {
+                @if (attendees is null)
+                {
+                    _ = FindUsersAsync();
+
+                    <p class="text-slate-800 dark:text-slate-200">loading</p>
+                }
+                else
+                {
+                    @foreach (var user in attendees)
+                    {
+                        <p>@user.FirstName @user.LastName  -  @user.Email</p>
+                    }
+                }
+            }
+                
+        }
     </div>
     @if (Editable)
     {
@@ -48,6 +86,13 @@
 
     [Parameter]
     public bool Attendance { get; set; }
+
+    [Parameter]
+    public bool ShowAttendees { get; set; }
+
+    private bool attendeesOpen;
+
+    private List<AppUser>? attendees = null;
 
     [Parameter]
     public EventCallback<Meeting> OnDelete { get; set; }
@@ -74,6 +119,14 @@
             await OnAttendance.InvokeAsync(user.Id);
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    private async Task FindUsersAsync()
+    {
+        attendees = new();
+        foreach (var userId in Meeting.RegisteredAttendees)
+            attendees.Add(await UserService.ReadUser(userId));
+        await InvokeAsync(StateHasChanged);
     }
 
     private void OnUserUpdated(object? _, AppUser? newUser) =>

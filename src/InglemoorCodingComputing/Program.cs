@@ -7,6 +7,10 @@ global using Microsoft.AspNetCore.Authentication.Cookies;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.Azure.Cosmos;
 
+using System.Globalization;
+
+CultureInfo.CurrentCulture = new("en-US");
+
 var builder = WebApplication.CreateBuilder(args);
 
 async Task<CosmosClient> ConfigureCosmos(IConfigurationSection config)
