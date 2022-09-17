@@ -1,0 +1,133 @@
+﻿@page "/dashboard/url-shortener"
+@layout DashboardLayout
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject IURLShortenerService URLShortenerService
+@attribute [Authorize(Roles="Admin")]
+<AdminCheck/>
+
+<PageTitle>CCC URL Shortener</PageTitle>
+
+<div class="p-3">
+    <h3 class="text-3xl font-semibold dark:text-indigo-300">URL Shortener</h3>
+    <div class="flex flex-col space-y-3 pt-4">
+        <div class="flex flex-col space-y-2 w-fit rounded-xl border-2 border-indigo-500 p-3">
+            <label for="original" class="block font-semibold">URL to shorten</label>
+            <input @bind=original class="px-3 py-2 rounded-xl text-slate-900 dark:text-gray-200 bg-gray-100 dark:bg-slate-700 focus:outline-none" id="original"/>
+            <label for="shortened" class="block font-semibold">Shortened url</label>
+            <div class="flex items-center">
+                <span class="inline-block align-middle">@(NavigationManager.BaseUri)s&#47;</span>
+                <input @bind=shortened id="shortened" class="px-2 py-1 rounded-xl text-slate-900 dark:text-gray-200 bg-gray-100 dark:bg-slate-700 focus:outline-none"/>
+                <button @onclick=FillInRandom class="mx-1 px-2 py-1 text-white bg-teal-500 rounded-xl hover:bg-teal-600">Random</button>
+            </div>
+            <button @onclick=SubmitAsync class="mx-1 px-2 py-1 text-white bg-indigo-500 rounded-xl hover:bg-indigo-600">Create</button>
+            <div class="text-rose-500">
+                @error
+            </div>
+            @if (created is not null)
+            {
+                <button class="text-emerald-400 font-bold" @onclick=CopyTextToClipboardAsync>
+                    @created (click to copy)
+                </button>
+            }
+        </div>
+
+        @if (loading)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <Virtualize Items="@links" >
+                <div class="flex justify-between px-3 py-2 m-2 bg-gray-100 rounded-md dark:bg-slate-900" @key=context.Id>
+                    <a target="_blank" class="font-mono font-bold text-emerald-400 dark:text-emerald:600 hover:underline" href=@($"s/{context.Shortened}")>/@context.Shortened</a>
+                    <a target="_blank" class="font-mono font-bold text-emerald-400 dark:text-emerald:600 hover:underline" href=@($"{context.Original}")>@context.Original</a>
+                    
+                    <div class="flex space-x-6">
+                        <button class="p-1 rounded-md text-rose-500 hover:text-white hover:bg-rose-500" @onclick="() => DeleteAsync(context.Shortened)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </Virtualize>
+        }
+    </div>
+</div>
+
+@code {
+    private string shortened = string.Empty;
+    private string original = string.Empty;
+    private string? created;
+    private bool loading = true;
+    private List<UrlAssociation> links = new();
+
+    private string? error;
+
+    private async Task DeleteAsync(string id)
+    {
+        loading = true;
+        await InvokeAsync(StateHasChanged);
+        await URLShortenerService.DeleteAsync(id);
+        links = await URLShortenerService.ReadAllAsync().ToListAsync();
+
+        loading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadAsync()
+    {
+        links = await URLShortenerService.ReadAllAsync().ToListAsync();
+        loading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadAsync();
+        }
+    }
+
+    private string GenerateRandomString()
+    {
+        var chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        return new(Enumerable.Range(1, 8).Select(_ => chars[Random.Shared.Next(chars.Length)]).ToArray());
+    }
+
+    private void FillInRandom() =>
+        shortened = GenerateRandomString();
+
+
+    private async Task SubmitAsync()
+    {
+        created = null;
+        if (string.IsNullOrWhiteSpace(original) || !original.Contains("://"))
+        {
+            error = "Invalid Orignal Url";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(shortened))
+        {
+            error = "Invalid Shortened Url";
+            return;
+        }
+        if (await URLShortenerService.CreateAsync(original, shortened))
+        {
+            created = $"{NavigationManager.BaseUri}s/{shortened}";  
+            original = string.Empty;
+            shortened = string.Empty;
+            _ = LoadAsync();
+        }
+        else
+        {
+            error = "Shortened form already exists";
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CopyTextToClipboardAsync() =>
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", created);
+}
