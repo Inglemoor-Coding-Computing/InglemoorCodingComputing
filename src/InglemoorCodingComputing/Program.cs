@@ -38,6 +38,7 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 // Add services to the container.
+builder.Services.AddLocalization();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
@@ -83,6 +84,8 @@ var app = builder.Build();
 
 // prewarm services
 app.Services.GetService<IUserAuthService>(); // blazor has hard time finding this service injected into a razor compoenent when it hasn't been requested first outside of blazor.
+
+app.UseRequestLocalization("en-US");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
