@@ -1,0 +1,10 @@
+﻿@page "/diagnostics/culture"
+@attribute [Authorize(Roles="Admin")]
+
+<AdminCheck />
+<PageTitle>Culture Diagnostic</PageTitle>
+
+<div class="flex flex-col justify-center text-slate-900 dark:text-white text-center">
+    <h2 class="text-2xl font-bold">Culture Diagnostic</h2>
+    <p class="text-lg">@System.Globalization.CultureInfo.CurrentCulture</p>
+</div>
