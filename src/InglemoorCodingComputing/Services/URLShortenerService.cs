@@ -1,10 +1,12 @@
 ﻿namespace InglemoorCodingComputing.Services;
 
 using Microsoft.Azure.Cosmos.Linq;
+using System.Collections.Concurrent;
 
 public class URLShortenerService : IURLShortenerService
 {
     private readonly Container _container;
+    private readonly ConcurrentDictionary<string, string> _cache = new();
 
     public URLShortenerService(IConfiguration configuration, CosmosClient cosmosClient)
     {
@@ -16,6 +18,7 @@ public class URLShortenerService : IURLShortenerService
         if (await FindExpandedURLAsync(shortened) is not null)
             return false;
         await _container.CreateItemAsync<UrlAssociation>(new(shortened, original));
+        _cache[shortened] = original;
         return true;
     }
 
@@ -23,6 +26,7 @@ public class URLShortenerService : IURLShortenerService
     {
         try
         {
+            _cache.TryRemove(shortened, out var _);
             return _container.DeleteItemAsync<UrlAssociation>(shortened, new(shortened));
         }
         catch 
@@ -35,7 +39,10 @@ public class URLShortenerService : IURLShortenerService
     {
         try
         {
-            return (await _container.ReadItemAsync<UrlAssociation>(shortened, new(shortened))).Resource.Original;
+            if (_cache.TryGetValue(shortened, out var orignal)) 
+                return orignal;
+            _cache[shortened] = (await _container.ReadItemAsync<UrlAssociation>(shortened, new(shortened))).Resource.Original;
+            return _cache[shortened];
         }
         catch
         {
