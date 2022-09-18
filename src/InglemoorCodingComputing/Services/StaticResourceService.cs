@@ -26,7 +26,7 @@ public class StaticResourceService : IStaticResourceService
         var dir = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/inglemoorccc/cache/resources/";
         if (!Directory.Exists(dir))
             Directory.CreateDirectory(dir);
-        var path = Path.Combine(dir, file);
+        var path = Path.Combine(dir, GetHashString(file));
         return path;
     }
 
