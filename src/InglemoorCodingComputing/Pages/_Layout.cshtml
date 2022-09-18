@@ -43,6 +43,12 @@
         @RenderBody()
         <partial name="_CookieConsentPartial" />
 
+        <div id="loading-spinner" class="hidden fixed float-right inset-x-0 bottom-0 right-0 flex justify-end animate-pulse">
+            <svg class="w-10 h-10 text-amber-500 m-2 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </div>
+
         <div id="blazor-error-ui">
             <environment include="Staging,Production">
                 An error has occurred. This application may no longer respond until reloaded.
@@ -57,7 +63,44 @@
         <script src="js/timezone.js"></script>
         <script src="js/http.js"></script>
         <script src="js/theme-switcher.js"></script>
-        <script src="_framework/blazor.server.js"></script>
+        <script autostart="false" src="_framework/blazor.server.js"></script>
+        <script>
+            async function connectionDown(options) {
+                var spinner = document.getElementById("loading-spinner");
+                spinner.classList.remove("hidden");
+                for (let i = 0; i < options.maxRetries; i++) {
+                    await this.delay(options.retryIntervalMilliseconds);
+                    if (this.isDisposed) {
+                        break;
+                    }
+                    try {
+                        if (await window.Blazor.reconnect()) {
+                            return;
+                        }
+                    } catch { }
+                }
+                location.reload();
+            }
 
+            function delay(durationMilliseconds) {
+                return new Promise(resolve => setTimeout(resolve, durationMilliseconds));
+            }
+
+            function connectionUp(e) {
+                var spinner = document.getElementById("loading-spinner");
+                spinner.classList.add("hidden");
+            }
+            
+            window.Blazor.start({
+                reconnectionOptions: {
+                    maxRetries: 10,
+                    retryIntervalMilliseconds: 1000,
+                },
+                reconnectionHandler: {
+                    onConnectionDown: e => connectionDown(e),
+                    onConnectionUp: e => connectionUp(e)
+                }
+            });
+        </script>
     </body>
 </html>
