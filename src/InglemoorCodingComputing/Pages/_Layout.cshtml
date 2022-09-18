@@ -68,6 +68,25 @@
             async function connectionDown(options) {
                 var spinner = document.getElementById("loading-spinner");
                 spinner.classList.remove("hidden");
+                
+                var vis = (function(){
+                    var stateKey, eventKey, keys = {
+                        hidden: "visibilitychange",
+                        webkitHidden: "webkitvisibilitychange",
+                        mozHidden: "mozvisibilitychange",
+                        msHidden: "msvisibilitychange"
+                    };
+                    for (stateKey in keys) {
+                        if (stateKey in document) {
+                            eventKey = keys[stateKey];
+                            break;
+                        }
+                    }
+                    return function(c) {
+                        if (c) document.addEventListener(eventKey, c);
+                        return !document[stateKey];
+                    }
+                })();
                 for (let i = 0; i < options.maxRetries; i++) {
                     await this.delay(options.retryIntervalMilliseconds);
                     if (this.isDisposed) {
@@ -79,7 +98,17 @@
                         }
                     } catch { }
                 }
-                location.reload();
+                // force reload when the user is looking
+                if (vis()) {
+                    location.reload();
+                }
+                else {
+                    vis(() => {
+                        if (vis()) {
+                            location.reload();
+                        }
+                    });
+                }
             }
 
             function delay(durationMilliseconds) {
@@ -94,7 +123,7 @@
             window.Blazor.start({
                 reconnectionOptions: {
                     maxRetries: 10,
-                    retryIntervalMilliseconds: 1000,
+                    retryIntervalMilliseconds: 500,
                 },
                 reconnectionHandler: {
                     onConnectionDown: e => connectionDown(e),
