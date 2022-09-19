@@ -76,6 +76,8 @@ builder.Services.AddScoped<IMeetingsService, MeetingsService>();
 builder.Services.AddScoped<IStaticPageService, StaticPageService>();
 builder.Services.AddScoped<TimeZoneService>();
 
+builder.Services.AddTransient(typeof(ICacheService<>), typeof(PersistentCacheService<>));
+
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     options.CheckConsentNeeded = _ => true;

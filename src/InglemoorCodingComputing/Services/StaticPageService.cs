@@ -1,15 +1,18 @@
 ﻿namespace InglemoorCodingComputing.Services;
 
+using System.Text.Json;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 
 public class StaticPageService : IStaticPageService
 {
     private readonly Container _container;
+    private readonly ICacheService<StaticPageService> _cacheService;
 
-    public StaticPageService(IConfiguration configuration, CosmosClient cosmosClient)
+    public StaticPageService(IConfiguration configuration, CosmosClient cosmosClient, ICacheService<StaticPageService> cacheService)
     {
         _container = cosmosClient.GetContainer(configuration["Cosmos:DatabaseName"], configuration["Cosmos:StaticPagesContainer"]);
+        _cacheService = cacheService;
     }
 
     public async Task CreateAsync(StaticPage page)
@@ -20,20 +23,32 @@ public class StaticPageService : IStaticPageService
 
     public async Task DeleteAsync(Guid id)
     {
+        var page = await ReadAsync(id);
+        _cacheService.Delete(page.Path);
         await _container.DeleteItemAsync<StaticPage>(id.ToString(), new(id.ToString()));
         Changed?.Invoke();
     }
 
     public async Task<StaticPage?> FindAsync(string path)
     {
+        if (_cacheService.TryRead(path) is Stream stream)
+        {
+            using var _ = stream;
+            return JsonSerializer.Deserialize<StaticPage>(stream);
+        }
+        
         var iterator = _container.GetItemLinqQueryable<StaticPage>().Where(x => x.Path == path).ToFeedIterator();
-        List<StaticPage> pages = new();
+        StaticPage? page = null;
         while (iterator.HasMoreResults)
         {
             foreach (var item in await iterator.ReadNextAsync())
-                pages.Add(item);
+                page = item;
         }
-        return pages.FirstOrDefault();
+
+        using var writeStream = _cacheService.Add(path);
+        JsonSerializer.Serialize(writeStream, page);
+
+        return page;
     }
 
     public async Task<StaticPage?> FindAsync(Guid id)

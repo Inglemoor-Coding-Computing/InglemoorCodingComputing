@@ -1,53 +1,27 @@
-﻿using System;
-
-namespace InglemoorCodingComputing.Services;
-
-using System.Security.Cryptography;
+﻿namespace InglemoorCodingComputing.Services;
 
 public class StaticResourceService : IStaticResourceService
 {
-    public static byte[] GetHash(string inputString)
-    {
-        using var algorithm = SHA256.Create();
-        return algorithm.ComputeHash(Encoding.UTF8.GetBytes(inputString));
-    }
-
-    public static string GetHashString(string inputString)
-    {
-        StringBuilder sb = new();
-        foreach (var b in GetHash(inputString))
-            sb.Append(b.ToString("X2"));
-
-        return sb.ToString();
-    }
-
-    public static string GetPath(string file)
-    {
-        var dir = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/inglemoorccc/cache/resources/";
-        if (!Directory.Exists(dir))
-            Directory.CreateDirectory(dir);
-        var path = Path.Combine(dir, GetHashString(file));
-        return path;
-    }
-
     private readonly BlobContainerClient _blobContainerClient;
+    private readonly ICacheService<StaticResourceService> _cacheService;
 
-    public StaticResourceService(BlobServiceClient blobServiceClient)
+    public StaticResourceService(BlobServiceClient blobServiceClient, ICacheService<StaticResourceService> cacheService)
     {
         _blobContainerClient = blobServiceClient.GetBlobContainerClient("static");
+        _cacheService = cacheService;
     }
 
     public async Task<Stream?> DownloadAsync(string file)
     {
         // Check if file was cached:
-        var path = GetPath(file);
-        if (File.Exists(path))
-            return File.OpenRead(path);
+        if (_cacheService.TryRead(file) is Stream stream)
+            return stream;
 
         var blobClient = _blobContainerClient.GetBlobClient(file);
         if (blobClient.Exists())
         {
-            await blobClient.DownloadToAsync(path);
+            using (var writeSteam = _cacheService.Add(file))
+                await blobClient.DownloadToAsync(writeSteam);
             return await DownloadAsync(file);
         }
         return null;
@@ -60,13 +34,10 @@ public class StaticResourceService : IStaticResourceService
         _ = DownloadAsync(file); // Cache it again.
     }
 
-    public Task DeleteAsync(string file)
+    public async Task DeleteAsync(string file)
     {
-        // Check if file was cached:
-        var path = GetPath(file);
-        if (File.Exists(path))
-            File.Delete(path);
-        return _blobContainerClient.DeleteBlobIfExistsAsync(file);
+        _cacheService.Delete(file);
+        await _blobContainerClient.DeleteBlobIfExistsAsync(file);
     }
 
     public IAsyncEnumerable<string> GetFileNamesAsync() =>
