@@ -1,6 +1,7 @@
 ﻿namespace InglemoorCodingComputing.Services;
 
 using System.Security.Cryptography;
+using System.Collections.Concurrent;
 
 /// <summary>
 /// Cache storing content as files locally.
@@ -10,6 +11,8 @@ public class PersistentCacheService<TPartition> : ICacheService<TPartition>
 {
     private readonly string directory = 
         $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/inglemoorccc/cache/{typeof(TPartition).FullName}/";
+
+    private ConcurrentDictionary<string, object> _locks = new();
 
     private static byte[] GetHash(string inputString)
     {
@@ -35,22 +38,31 @@ public class PersistentCacheService<TPartition> : ICacheService<TPartition>
 
     public Stream Add(string key)
     {
-        var path = GetPath(key);
-        if (File.Exists(path))
-            File.Delete(path);
-        return File.OpenWrite(path);
+        lock (_locks.GetOrAdd(key, new object()))
+        {
+            var path = GetPath(key);
+            if (File.Exists(path))
+                File.Delete(path);
+            return File.OpenWrite(path);
+        }
     }
 
     public void Delete(string key)
     {
-        var path = GetPath(key);
-        if (File.Exists(path))
-            File.Delete(path);
+        lock (_locks.GetOrAdd(key, new object()))
+        {
+            var path = GetPath(key);
+            if (File.Exists(path))
+                File.Delete(path);
+        }
     }
 
     public Stream? TryRead(string key)
     {
-        var path = GetPath(key);
-        return File.Exists(path) ? File.OpenRead(path) : null;
+        lock (_locks.GetOrAdd(key, new object()))
+        {
+            var path = GetPath(key);
+            return File.Exists(path) ? File.OpenRead(path) : null;
+        }
     }
 }
