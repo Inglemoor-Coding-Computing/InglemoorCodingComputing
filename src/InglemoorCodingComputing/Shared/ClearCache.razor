@@ -1,0 +1,31 @@
+﻿@inject ICacheEventService CacheEventService
+
+<div class="border-2 border-indigo-500 rounded-xl w-fit m-2 p-2 flex flex-col space-y-3">
+    <h3 class="text-xl font-semibold">Clear Server Cache:</h3>
+    <p class="font-bold">If you do not know what this button does, do not press it.</p>
+    <button class=@($"{(disabled ? "bg-violet-700" : "bg-violet-500 hover:bg-violet-600 active:bg-violet-700")} px-3 py-2 focus:outline-none focus:ring focus:ring-violet-300 rounded-2xl text-white font-bold") disabled=@disabled @onclick=ClearCacheAsync>Clear Cache</button>
+    @if (results is not null)
+    {
+        <div class="p-2">
+            @foreach (var result in results)
+            {
+                <p class="italic text-slate-900 dark:text-slate-200">@result.Key - @(result.Value ? "Success" : "Failure")</p>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    public bool disabled;
+
+    IReadOnlyDictionary<string, bool>? results;
+
+    private async Task ClearCacheAsync()
+    {
+        disabled = true;
+        results = null;
+        await InvokeAsync(StateHasChanged);
+        results = CacheEventService.ClearCache();
+        disabled = false;
+    }
+}

@@ -1,6 +1,6 @@
 ﻿namespace InglemoorCodingComputing.Services;
 
-public class UserLogoutManager
+public sealed class UserLogoutManager
 {
     public event Action<Guid>? UserLoggedOut;
     public void Logout(Guid user) =>

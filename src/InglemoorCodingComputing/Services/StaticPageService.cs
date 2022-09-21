@@ -4,7 +4,7 @@ using System.Text.Json;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 
-public class StaticPageService : IStaticPageService
+public sealed class StaticPageService : IStaticPageService
 {
     private readonly Container _container;
     private readonly ICacheService<StaticPageService> _cacheService;
@@ -44,6 +44,9 @@ public class StaticPageService : IStaticPageService
             foreach (var item in await iterator.ReadNextAsync())
                 page = item;
         }
+
+        if (page is null)
+            return null;
 
         using var writeStream = _cacheService.Add(path);
         JsonSerializer.Serialize(writeStream, page);

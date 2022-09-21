@@ -62,6 +62,7 @@ builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddSingleton<IStaticResourceService, StaticResourceService>();
 builder.Services.AddSingleton<IURLShortenerService, URLShortenerService>();
+builder.Services.AddSingleton<ICacheEventService, CacheEventService>();
 builder.Services.AddSingleton<UserLogoutManager>();
 builder.Services.AddSingleton(_ =>
 {

@@ -3,7 +3,7 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 
-public class UserStateService : IUserStateService, IDisposable
+public sealed class UserStateService : IUserStateService, IDisposable
 {
     private readonly AuthenticationStateProvider _authenticationStateProvider;
     private readonly IUserService _userService;

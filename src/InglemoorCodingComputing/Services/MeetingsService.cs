@@ -1,10 +1,9 @@
 ﻿namespace InglemoorCodingComputing.Services;
 
-using System.Collections.Concurrent;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 
-public class MeetingsService : IMeetingsService
+public sealed class MeetingsService : IMeetingsService
 {
     private readonly Container _container;
 

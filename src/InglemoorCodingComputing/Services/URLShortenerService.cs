@@ -3,14 +3,23 @@
 using Microsoft.Azure.Cosmos.Linq;
 using System.Collections.Concurrent;
 
-public class URLShortenerService : IURLShortenerService
+public sealed class URLShortenerService : IURLShortenerService, IDisposable
 {
     private readonly Container _container;
+    private readonly ICacheEventService _cacheEventService;
     private readonly ConcurrentDictionary<string, string> _cache = new();
 
-    public URLShortenerService(IConfiguration configuration, CosmosClient cosmosClient)
+    public URLShortenerService(IConfiguration configuration, CosmosClient cosmosClient, ICacheEventService cacheEventService)
     {
         _container = cosmosClient.GetContainer(configuration["Cosmos:DatabaseName"], configuration["Cosmos:ShortenedURLContainer"]);
+        _cacheEventService = cacheEventService;
+        _cacheEventService.CacheClearing += OnCacheClearing;
+    }
+
+    private void OnCacheClearing(Action<string, bool> addResponse)
+    {
+        _cache.Clear();
+        addResponse("URLShortenerService (Memory)", true);
     }
 
     public async Task<bool> CreateAsync(string original, string shortened)
@@ -59,4 +68,7 @@ public class URLShortenerService : IURLShortenerService
                 yield return item;
         }
     }
+
+    public void Dispose() =>
+        _cacheEventService.CacheClearing -= OnCacheClearing;
 }

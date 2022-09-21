@@ -7,12 +7,37 @@ using System.Collections.Concurrent;
 /// Cache storing content as files locally.
 /// </summary>
 /// <typeparam name="TPartition"></typeparam>
-public class PersistentCacheService<TPartition> : ICacheService<TPartition>
+public sealed class PersistentCacheService<TPartition> : ICacheService<TPartition>, IDisposable
 {
-    private readonly string directory = 
-        $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/inglemoorccc/cache/{typeof(TPartition).FullName}/";
+    private readonly string directory = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/inglemoorccc/cache/{typeof(TPartition).FullName}/";
+    private readonly ConcurrentDictionary<string, object> _locks = new();
+    private readonly ICacheEventService _cacheEventService;
 
-    private ConcurrentDictionary<string, object> _locks = new();
+    /// <summary>
+    /// Creates a new PersistentCacheService.
+    /// </summary>
+    /// <param name="cacheEventService">Supplies events to initiate clearing of the cache.</param>
+    public PersistentCacheService(ICacheEventService cacheEventService)
+    {
+        _cacheEventService = cacheEventService;
+        _cacheEventService.CacheClearing += OnCacheClearing;
+    }
+
+    private void OnCacheClearing(Action<string, bool> addResponse)
+    {
+        try
+        {
+            DirectoryInfo directoryInfo = new(directory);
+            if (directoryInfo.Exists)
+                directoryInfo.Delete(true);
+            _locks.Clear();
+            addResponse($"PersistentCacheService: {typeof(TPartition).Name}", true);
+        }
+        catch
+        {
+            addResponse($"PersistentCacheService: {typeof(TPartition).Name}", false);
+        }
+    }
 
     private static byte[] GetHash(string inputString)
     {
@@ -65,4 +90,7 @@ public class PersistentCacheService<TPartition> : ICacheService<TPartition>
             return File.Exists(path) ? File.OpenRead(path) : null;
         }
     }
+
+    public void Dispose() => 
+        _cacheEventService.CacheClearing -= OnCacheClearing;
 }

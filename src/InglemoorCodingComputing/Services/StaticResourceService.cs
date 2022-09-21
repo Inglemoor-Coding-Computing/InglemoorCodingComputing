@@ -1,6 +1,6 @@
 ﻿namespace InglemoorCodingComputing.Services;
 
-public class StaticResourceService : IStaticResourceService
+public sealed class StaticResourceService : IStaticResourceService
 {
     private readonly BlobContainerClient _blobContainerClient;
     private readonly ICacheService<StaticResourceService> _cacheService;

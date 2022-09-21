@@ -38,6 +38,7 @@ else
     {
         if (firstRender || PageRoute != oldRoute)
         {
+            oldRoute = PageRoute;
             if (PageRoute is null || PageRoute.Length == 0 || PageRoute[0] == '_') 
             {
                 notFound = true;

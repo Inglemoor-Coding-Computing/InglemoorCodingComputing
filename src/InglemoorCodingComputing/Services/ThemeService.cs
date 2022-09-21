@@ -2,7 +2,7 @@
 
 using Microsoft.JSInterop;
 
-public class ThemeService : IThemeService
+public sealed class ThemeService : IThemeService
 {
     private readonly ValueTask<IJSObjectReference> _module;
     private Theme _theme;

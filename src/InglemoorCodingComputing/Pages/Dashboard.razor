@@ -1,17 +1,13 @@
 ﻿@page "/dashboard"
 @layout DashboardLayout
+@attribute [Authorize(Roles="Admin")]
+<AdminCheck/>
 
 <PageTitle>Dashboard</PageTitle>
 
-<AuthorizeView Roles="Admin">
-    <NotAuthorized>
-        <h3>This page is currently only available to admins.</h3>
-    </NotAuthorized>
-    <Authorized>
-        <AdminCheck/>
-        <h3>Admin Dashboard</h3>
-    </Authorized>
-</AuthorizeView>
+<h3 class="text-2xl font-semibold">Admin Dashboard</h3>
+<ClearCache/>
+
 
 @code {
 

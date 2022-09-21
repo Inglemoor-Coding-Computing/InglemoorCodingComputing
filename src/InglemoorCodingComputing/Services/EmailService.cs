@@ -5,7 +5,7 @@ using MimeKit.Text;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 
-public class EmailService : IEmailService
+public sealed class EmailService : IEmailService
 {
     private readonly string _smtpFrom;
     private readonly string _smtpServer;

@@ -2,7 +2,7 @@
 
 using Microsoft.JSInterop;
 
-public class TimeZoneService
+public sealed class TimeZoneService
 {
     private readonly IJSRuntime _jsRuntime;
 

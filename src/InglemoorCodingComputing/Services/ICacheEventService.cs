@@ -6,12 +6,17 @@
 public interface ICacheEventService
 {
     /// <summary>
-    /// Invoke event.
+    /// Clears server cache.
     /// </summary>
-    void ClearCache();
+    /// <returns>A dictionary indicating success from various caching mechanisms. Null if a clearing is in progress.</returns>
+    IReadOnlyDictionary<string, bool>? ClearCache();
+
 
     /// <summary>
     /// Event invoked when cache is being cleared.
+    /// Includes a function to add results indicating source and success.
     /// </summary>
-    event Action CacheClearing;
+    event Action<Action<string, bool>> CacheClearing;
 }
+
+    

@@ -3,7 +3,7 @@ namespace InglemoorCodingComputing.Services;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 
-public class UserService : IUserService
+public sealed class UserService : IUserService
 {
     private readonly Container _container;
     public UserService(IConfiguration configuration, CosmosClient cosmosClient)
