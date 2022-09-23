@@ -34,28 +34,35 @@ else
 
     private bool notFound = false;
 
+    private async Task RenderContentAsync()
+    {
+        if (PageRoute is null || PageRoute.Length == 0 || PageRoute[0] == '_') 
+        {
+            notFound = true;
+            return;
+        }
+        var page = await StaticPageService.FindAsync(PageRoute);
+        if (page is null || !page.Live)
+        {
+            notFound = true;
+            return;
+        }
+        contents = page.Rendered;
+        title = page.Title;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender || PageRoute != oldRoute)
+        if (!firstRender && PageRoute != oldRoute)
         {
             oldRoute = PageRoute;
-            if (PageRoute is null || PageRoute.Length == 0 || PageRoute[0] == '_') 
-            {
-                notFound = true;
-                await InvokeAsync(StateHasChanged);
-                return;
-            }
-            var page = await StaticPageService.FindAsync(PageRoute);
-            if (page is null || !page.Live)
-            {
-                notFound = true;
-                await InvokeAsync(StateHasChanged);
-                return;
-            }
-            contents = page.Rendered;
-            title = page.Title;
+            await RenderContentAsync();
+
             await InvokeAsync(StateHasChanged);
         }
         await JSRuntime.InvokeVoidAsync("highlightSnippet");
     }
+
+    protected override Task OnInitializedAsync() =>
+        RenderContentAsync();
 }
