@@ -6,5 +6,5 @@ public class DiscordController : ControllerBase
 {
     [HttpGet]
     public IActionResult Get() =>
-        Redirect("https://discord.gg/4s6stUApbc");
+        Redirect("s/discord");
 }
