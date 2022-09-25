@@ -3,40 +3,44 @@
 open Utils
 open System
 open System.IO
+open System.IO.Compression
 open System.Threading
 
 while true do
     printfn "starting ..."
     try
-        // find the latest version
         cd ["bin"]
-        
-        let directories = 
-            DirectoryInfo(".").EnumerateDirectories() 
-            |> Seq.cache
-        
-        let newest =
-            directories
-            |> Seq.maxBy (fun x -> 
-                match DateTime.TryParse(x.Name.Replace('_', ':')) with 
-                | true, v -> v 
-                | _ -> DateTime.MinValue)
 
-        // delete the rest
-        for dir in directories do
-            if dir.Name <> newest.Name then
-                dir.Delete true
+        let bin = Environment.CurrentDirectory
 
-        let file =
-            newest.EnumerateFiles()
-            |> Seq.where (fun x -> x.Name = "InglemoorCodingComputing.dll")
-            |> Seq.head
+        let file = 
+            DirectoryInfo(".").EnumerateFiles()
+            |> Seq.find (fun x -> x.Name = "InglemoorCodingComputing.dll")
+
+        let proc = execP "sudo" $"-E dotnet \"{file.FullName}\""
+
+        cd []
         
-        cd ["bin"; newest.Name]
+        let mutable broken = false;
+        while not broken do
+            // check every 10 seconds for a new version
+            Thread.Sleep 10000
+            DirectoryInfo(".").EnumerateFiles()
+            |> Seq.tryFind (fun x -> x.Name = "package.zip")
+            |> function
+            | Some zip -> 
+                proc.Kill();
 
-        exec "sudo" $"-E dotnet \"{file.FullName}\""
-    with _ ->
-        kill ()
+                Directory.Delete(bin, true)
+                cd ["bin"]
+
+                ZipFile.ExtractToDirectory(zip.FullName, bin)
+
+                broken <- true;
+            | _ -> 
+                ()
+    with _ -> 
+        ()
 
     printfn "process ended, waiting to restart"
     Thread.Sleep 5000

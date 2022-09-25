@@ -6,6 +6,9 @@ let exec file args =
     use proc = Process.Start(ProcessStartInfo(file, args, UseShellExecute=true))
     proc.WaitForExit()
 
+let execP file args = 
+    Process.Start(ProcessStartInfo(file, args, UseShellExecute=true))
+
 let execR file args = 
     use proc = Process.Start(ProcessStartInfo(file, args, UseShellExecute=true))
     proc.WaitForExit()
@@ -16,10 +19,3 @@ let cd directory =
     if Directory.Exists(d) |> not then
         Directory.CreateDirectory(d) |> ignore
     Environment.CurrentDirectory <- d
-
-let kill () =
-    for proc in Process.GetProcesses() do
-        try
-            if proc.ProcessName = "InglemoorCodingComputing" then
-                proc.Kill()
-        with _ -> ()
