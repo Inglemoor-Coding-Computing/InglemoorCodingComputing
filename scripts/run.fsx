@@ -30,10 +30,9 @@ while true do
         cd []
         
         let mutable broken = false;
-        while not broken && (match proc with None -> false | Some x -> not x.HasExited) do
-            // check every 5 seconds
-            Thread.Sleep 10000
-            printfn "Checking for new version or crash"
+        while not broken do
+            // check every 3 seconds
+            Thread.Sleep 3000
             DirectoryInfo(".").EnumerateFiles()
             |> Seq.tryFind (fun x -> x.Name = "package.zip")
             |> function
@@ -52,8 +51,12 @@ while true do
                 broken <- true;
             | _ -> 
                 ()
+            broken <-
+                match proc with 
+                | None -> true
+                | Some x -> x.HasExited
     with _ ->
         ()
     printfn "process ended, waiting to restart"
-    Thread.Sleep 5000
+    Thread.Sleep 1000
     printf "re"
