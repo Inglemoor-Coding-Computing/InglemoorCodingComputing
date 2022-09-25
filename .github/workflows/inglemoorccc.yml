@@ -42,6 +42,8 @@ jobs:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         publish-profile: ${{ secrets.inglemoorccc_FFFF }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    - name: Compress package
+      run: dotnet fsi scripts/deploy.fsx
     - name: Deploy to production
       uses: appleboy/scp-action@master
       with:
