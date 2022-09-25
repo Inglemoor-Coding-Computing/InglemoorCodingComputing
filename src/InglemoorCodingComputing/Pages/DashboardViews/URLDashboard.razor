@@ -3,6 +3,7 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject IURLShortenerService URLShortenerService
+@inject IRouteAnalyzerService RouteAnalyzerService
 @attribute [Authorize(Roles="Admin")]
 <AdminCheck/>
 
@@ -19,6 +20,10 @@
                 <span class="inline-block align-middle">@(NavigationManager.BaseUri)s&#47;</span>
                 <input @bind=shortened id="shortened" class="px-2 py-1 rounded-xl text-slate-900 dark:text-gray-200 bg-gray-100 dark:bg-slate-700 focus:outline-none"/>
                 <button @onclick=FillInRandom class="mx-1 px-2 py-1 text-white bg-teal-500 rounded-xl hover:bg-teal-600">Random</button>
+            </div>
+            <div class="flex items-center space-x-2">
+                <input type="checkbox" @bind=special />
+                <span>Add absolute routing "~/{shortened}"</span>
             </div>
             <button @onclick=SubmitAsync class="mx-1 px-2 py-1 text-white bg-indigo-500 rounded-xl hover:bg-indigo-600">Create</button>
             <div class="text-rose-500">
@@ -40,7 +45,13 @@
         {
             <Virtualize Items="@links" >
                 <div class="flex justify-between px-3 py-2 m-2 bg-gray-100 rounded-md dark:bg-slate-900" @key=context.Id>
-                    <a target="_blank" class="font-mono font-bold text-emerald-400 dark:text-emerald:600 hover:underline" href=@($"s/{context.Shortened}")>/@context.Shortened</a>
+                    <a target="_blank" class="font-mono font-bold text-emerald-400 dark:text-emerald:600 hover:underline" href=@($"s/{context.Shortened}")>
+                        /@context.Shortened
+                        @if (context.Special)
+                        {
+                            <span>(absolute)</span>
+                        }
+                </a>
                     <a target="_blank" class="font-mono font-bold text-emerald-400 dark:text-emerald:600 hover:underline" href=@($"{context.Original}")>@context.Original</a>
                     
                     <div class="flex space-x-6">
@@ -61,6 +72,7 @@
     private string original = string.Empty;
     private string? created;
     private bool loading = true;
+    private bool special;
     private List<UrlAssociation> links = new();
 
     private string? error;
@@ -78,7 +90,7 @@
 
     private async Task LoadAsync()
     {
-        links = await URLShortenerService.ReadAllAsync().ToListAsync();
+        links = await URLShortenerService.ReadAllAsync().OrderBy(x => x.Shortened).ToListAsync();
         loading = false;
         await InvokeAsync(StateHasChanged);
     }
@@ -114,11 +126,17 @@
             error = "Invalid Shortened Url";
             return;
         }
-        if (await URLShortenerService.CreateAsync(original, shortened))
+        if (special && !RouteAnalyzerService.Routes.All(x => x is "/" || x.Split('/').Where(x => !string.IsNullOrEmpty(x)).FirstOrDefault()?.ToLower() != shortened.ToLower()))
+        {
+            error = "Cannot use absolute routing";
+            return;
+        }
+        if (await URLShortenerService.CreateAsync(original, shortened, special))
         {
             created = $"{NavigationManager.BaseUri}s/{shortened}";  
             original = string.Empty;
             shortened = string.Empty;
+            special = false;
             _ = LoadAsync();
         }
         else

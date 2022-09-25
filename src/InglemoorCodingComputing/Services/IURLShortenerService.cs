@@ -10,7 +10,7 @@ public interface IURLShortenerService
     /// </summary>
     /// <param name="shortened">the shortened url to expand.</param>
     /// <returns>the url that may be redirected to</returns>
-    Task<string?> FindExpandedURLAsync(string shortened);
+    Task<string?> FindExpandedURLAsync(string shortened, bool special = false);
 
     /// <summary>
     /// Create a shortened url.
@@ -18,7 +18,7 @@ public interface IURLShortenerService
     /// <param name="original">Original url that needs shortening</param>
     /// <param name="shortened">the new shortened portion of the url.</param>
     /// <returns>true if successful, false otherwise</returns>
-    Task<bool> CreateAsync(string original, string shortened);
+    Task<bool> CreateAsync(string original, string shortened, bool special = false);
 
     /// <summary>
     /// Deletes a shortened url.
@@ -27,7 +27,14 @@ public interface IURLShortenerService
     Task DeleteAsync(string shortened);
 
     /// <summary>
-    /// Finds all the url associations.
+    /// Finds all url associations.
     /// </summary>
     IAsyncEnumerable<UrlAssociation> ReadAllAsync();
+
+    /// <summary>
+    /// Finds all special urls.
+    /// </summary>
+    IAsyncEnumerable<string> ReadAllSpecialAsync();
+
+    event Action<IReadOnlyList<string>> SpecialURLsChanged;
 }

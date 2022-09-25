@@ -64,6 +64,7 @@ builder.Services.AddSingleton<IStaticResourceService, StaticResourceService>();
 builder.Services.AddSingleton<IURLShortenerService, URLShortenerService>();
 builder.Services.AddSingleton<ICacheEventService, CacheEventService>();
 builder.Services.AddSingleton<UserLogoutManager>();
+builder.Services.AddSingleton<URLShortenerEndpointDataSource>();
 builder.Services.AddSingleton(_ =>
 {
     Ganss.XSS.HtmlSanitizer x = new();
@@ -77,6 +78,7 @@ builder.Services.AddScoped<IMeetingsService, MeetingsService>();
 builder.Services.AddScoped<IStaticPageService, StaticPageService>();
 builder.Services.AddScoped<TimeZoneService>();
 
+builder.Services.AddTransient<IRouteAnalyzerService, RouteAnalyzerService>();
 builder.Services.AddTransient(typeof(ICacheService<>), typeof(PersistentCacheService<>));
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
@@ -114,9 +116,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthentication();
 
-app.MapControllers();
-app.MapRazorPages();
 app.MapBlazorHub();
+app.MapRazorPages();
+app.MapControllers();
+
+((IEndpointRouteBuilder)app).DataSources.Add(app.Services.GetService<URLShortenerEndpointDataSource>() ?? throw new ArgumentNullException());
+
 app.MapFallbackToPage("/_Host");
 
 app.Run();

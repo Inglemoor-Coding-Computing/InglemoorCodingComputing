@@ -1,6 +1,6 @@
 ﻿namespace InglemoorCodingComputing.Controllers;
 
-[Route("s")]
+[Route("s/")]
 [ApiController]
 public class UrlShortenerController : ControllerBase
 {

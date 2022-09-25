@@ -1,0 +1,14 @@
+﻿@page "/diagnostics/routes"
+@attribute [Authorize(Roles="Admin")]
+@inject IRouteAnalyzerService RouteAnalyzerService
+
+<AdminCheck />
+<PageTitle>Routing Diagnostic</PageTitle>
+
+<div class="flex flex-col justify-center text-slate-900 dark:text-white text-center">
+    <h2 class="text-2xl font-bold">Routing Diagnostic</h2>
+    @foreach (var route in RouteAnalyzerService.Routes)
+    {
+        <p class="text-lg">@route</p>
+    }
+</div>

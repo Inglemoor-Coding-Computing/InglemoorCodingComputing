@@ -22,6 +22,9 @@
             <input id="name" @bind=name placeholder="@(file?.Name)" class="px-2 py-1 m-2 bg-gray-300 rounded-lg text-slate-700 dark:text-slate-300 dark:bg-slate-700 focus:outline-none"/>
             <InputFile OnChange=LoadFileAsync />
             <button @onclick=AddFileAsync class="p-2 m-1 text-white bg-indigo-500 rounded-lg">Add/Replace file</button>
+            <div class="text-rose-500">
+                @error
+            </div>
             <Virtualize Items=@files>
                 <div class="flex justify-between px-3 py-2 m-2 bg-gray-100 rounded-md dark:bg-slate-900">
                     <a target="_blank" href=@($"{NavigationManager.BaseUri}static/{context}") class="hover:underline">@context</a>
