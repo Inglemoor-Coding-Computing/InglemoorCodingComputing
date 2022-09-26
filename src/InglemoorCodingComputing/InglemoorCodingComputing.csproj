@@ -28,4 +28,8 @@
     <None Include="wwwroot\*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\webp\" />
+  </ItemGroup>
+
 </Project>
