@@ -86,6 +86,7 @@ public sealed class StaticPageService : IStaticPageService
 
     public async Task UpdateAsync(StaticPage page)
     {
+        _cacheService.Delete(page.Path);
         await _container.ReplaceItemAsync(page, page.Id.ToString(), new(page.Id.ToString()));
         Changed?.Invoke();
     }
