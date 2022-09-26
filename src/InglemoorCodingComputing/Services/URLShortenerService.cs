@@ -73,7 +73,7 @@ public sealed class URLShortenerService : IURLShortenerService, IDisposable
 
     public async IAsyncEnumerable<string> ReadAllSpecialAsync()
     {
-        var iterator = _container.GetItemLinqQueryable<UrlAssociation>().ToFeedIterator();
+        var iterator = _container.GetItemLinqQueryable<UrlAssociation>().Where(x => x.Special).ToFeedIterator();
         while (iterator.HasMoreResults)
         {
             foreach (var item in await iterator.ReadNextAsync())
