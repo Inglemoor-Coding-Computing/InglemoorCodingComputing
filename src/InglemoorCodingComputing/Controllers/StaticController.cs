@@ -14,6 +14,7 @@ public class StaticController : ControllerBase
     }
 
     [HttpGet("{filename}")]
+    [ResponseCache(Duration = 120, Location = ResponseCacheLocation.Any)]
     public async Task<IActionResult> GetAsync(string filename) =>
         await _staticResourceService.DownloadAsync(filename) switch
         {
