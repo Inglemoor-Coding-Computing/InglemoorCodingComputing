@@ -28,18 +28,18 @@
         </script>
         <script>
             if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark')
+                document.body.classList.add('dark')
                 document.querySelector(`link[title="dark"]`).removeAttribute("disabled");
             }
             else {
-                document.documentElement.classList.remove('dark')
+                document.body.classList.remove('dark')
                 document.querySelector(`link[title="light"]`).removeAttribute("disabled");
             }
             highlightSnippet();
         </script>
         <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
     </head>
-    <body class="bg-white dark:bg-zinc-900">
+    <body class="bg-white dark:bg-zinc-900 transition-colors duration-1000">
         @RenderBody()
         <partial name="_CookieConsentPartial" />
 
