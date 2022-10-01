@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 
 public sealed class UserAuthService : IUserAuthService
 {
+    private readonly IApprovedEmailsService _approvedEmailsService;
     private readonly Container _container;
     private readonly int _saltSize;
     private readonly int _hashSize;
@@ -17,8 +18,9 @@ public sealed class UserAuthService : IUserAuthService
 
     public event EventHandler<Guid>? OnAdminRevoked;
 
-    public UserAuthService(IConfiguration configuration, CosmosClient cosmosClient)
+    public UserAuthService(IConfiguration configuration, CosmosClient cosmosClient, IApprovedEmailsService approvedEmailsService)
     {
+        _approvedEmailsService = approvedEmailsService;
         _container = cosmosClient.GetContainer(configuration["Cosmos:DatabaseName"], configuration["Cosmos:AuthContainer"]);
         _saltSize = int.Parse(configuration["Argon2id:SaltLength"]);
         _hashSize = int.Parse(configuration["Argon2id:HashLength"]);
@@ -75,7 +77,7 @@ public sealed class UserAuthService : IUserAuthService
     /// <returns></returns>
     public async Task<UserAuth?> AddUserAsync(string email, string password)
     {
-        if (await UserWithEmail(email) is not null)
+        if (!(await UserWithEmail(email) is null && await _approvedEmailsService.EmailApprovedAsync(email)))
             return null;
 
         var hash = GetHash(password, out var salt);
@@ -87,7 +89,7 @@ public sealed class UserAuthService : IUserAuthService
 
     public async Task<UserAuth?> AddGoogleUserAsync(string email, string googleId)
     {
-        if (await UserWithEmail(email) is not null)
+        if (!(await UserWithEmail(email) is null && await _approvedEmailsService.EmailApprovedAsync(email)))
             return null;
 
         var id = Guid.NewGuid();
