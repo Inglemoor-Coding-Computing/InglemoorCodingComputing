@@ -11,12 +11,14 @@ using System.Security.Claims;
 [ApiController]
 public class AuthController : ControllerBase
 {
+    private readonly IApprovedEmailsService _approvedEmailsService;
     private readonly IUserAuthService _userAuthService;
     private readonly IUserService _userService;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IUserAuthService userAuthService, IUserService userService, ILogger<AuthController> logger)
+    public AuthController(IUserAuthService userAuthService, IUserService userService, IApprovedEmailsService approvedEmailsService, ILogger<AuthController> logger)
     {
+        _approvedEmailsService = approvedEmailsService;
         _userAuthService = userAuthService;
         _userService = userService;
         _logger = logger;
@@ -53,57 +55,68 @@ public class AuthController : ControllerBase
     [HttpGet("sign-in-callback/google")]
     public async Task<IActionResult> GoogleCallbackAsync(string? returnUrl, string? remoteError)
     {
-        var firstName = User.FindFirstValue(ClaimTypes.GivenName);
-        var lastName = User.FindFirstValue(ClaimTypes.Surname);
-        var googleId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var emailAddress = User.FindFirstValue(ClaimTypes.Email);
-
-        if (emailAddress is null || googleId is null)
+        try
         {
-            await HttpContext.SignOutAsync();
-            return Redirect("/authentication/login-failure");
-        }
+            var firstName = User.FindFirstValue(ClaimTypes.GivenName);
+            var lastName = User.FindFirstValue(ClaimTypes.Surname);
+            var googleId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var emailAddress = User.FindFirstValue(ClaimTypes.Email);
 
-        if (await _userAuthService.AddGoogleUserAsync(emailAddress, googleId) is UserAuth userAuth)
-        {
-            // Register user
-            await _userService.CreateUser(new()
+            if (emailAddress is null || googleId is null)
             {
-                Id = userAuth.Id,
-                Email = emailAddress,
-                FirstName = firstName,
-                LastName = lastName,
-                GraduationYear = -1,
-                CreatedDate = DateTime.UtcNow,
-            });
+                await HttpContext.SignOutAsync();
+                return Redirect("/authentication/login-failure");
+            }
+
+            if (await _userAuthService.AddGoogleUserAsync(emailAddress, googleId) is UserAuth userAuth)
+            {
+                // Register user
+                await _userService.CreateUser(new()
+                {
+                    Id = userAuth.Id,
+                    Email = emailAddress,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    GraduationYear = -1,
+                    CreatedDate = DateTime.UtcNow,
+                });
+            }
+
+            if (await _userAuthService.UserWithGoogleIdAsync(googleId) is UserAuth userAuth2)
+            {
+                // Login
+                // Replace the id claim from google with our own
+                var identity = User.Identity as ClaimsIdentity;
+                var claim = User.Claims.Where(x => x.Type == ClaimTypes.NameIdentifier).FirstOrDefault();
+
+                identity?.RemoveClaim(claim);
+                identity?.AddClaim(new(ClaimTypes.NameIdentifier, userAuth2.Id.ToString()));
+
+                if (userAuth2.IsAdmin)
+                    identity?.AddClaim(new(ClaimTypes.Role, "Admin"));
+
+                if (identity is not null)
+                    await HttpContext.SignInAsync(new(identity));
+
+                var user = await _userService.ReadUser(userAuth2.Id);
+
+                return Redirect(
+                    user?.RegistrationIncomplete is true
+                    ? $"/authentication/register-google{(returnUrl is null ? "" : "?returnUrl=" + Uri.EscapeDataString(returnUrl))}"
+                    : returnUrl ?? "/");
+            }
+            else if (!await _approvedEmailsService.EmailApprovedAsync(emailAddress))
+            {
+                await HttpContext.SignOutAsync();
+                return Redirect("/authentication/login-failure?error=Invalid%20Email");
+            }
         }
-        if (await _userAuthService.UserWithGoogleIdAsync(googleId) is UserAuth userAuth2)
+        catch
         {
-            // Login
-            // Replace the id claim from google with our own
-            var identity = User.Identity as ClaimsIdentity;
-            var claim = User.Claims.Where(x => x.Type == ClaimTypes.NameIdentifier).FirstOrDefault();
-
-            identity?.RemoveClaim(claim);
-            identity?.AddClaim(new(ClaimTypes.NameIdentifier, userAuth2.Id.ToString()));
-
-            if (userAuth2.IsAdmin)
-                identity?.AddClaim(new(ClaimTypes.Role, "Admin"));
-
-            if (identity is not null)
-                await HttpContext.SignInAsync(new(identity));
-
-            var user = await _userService.ReadUser(userAuth2.Id);
-
-            return Redirect(
-                user?.RegistrationIncomplete is true
-                ? $"/authentication/register-google{(returnUrl is null ? "" : "?returnUrl=" + Uri.EscapeDataString(returnUrl))}"
-                : returnUrl ?? "/");
+            // At this point something has gone very wrong, sign out.
+            await HttpContext.SignOutAsync();
         }
-
-        // At this point something has gone very wrong, sign out.
-        await HttpContext.SignOutAsync();
-        return Redirect("authentication/login-failure");
+        return Redirect("/authentication/login-failure");
     }
 
     [HttpPost("logout")]

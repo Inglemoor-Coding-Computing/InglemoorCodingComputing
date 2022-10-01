@@ -23,6 +23,7 @@ async Task<CosmosClient> ConfigureCosmos(IConfigurationSection config)
     _ = await db.CreateContainerIfNotExistsAsync(new(config["MeetingsContainer"], "/id"));
     _ = await db.CreateContainerIfNotExistsAsync(new(config["StaticPagesContainer"], "/id"));
     _ = await db.CreateContainerIfNotExistsAsync(new(config["ShortenedURLContainer"], "/shortened"));
+    _ = await db.CreateContainerIfNotExistsAsync(new(config["ApprovedEmailsContainer"], "/id"));
     return cosmos;
 }
 
@@ -61,6 +62,7 @@ builder.Services.AddSingleton<IUserAuthService, UserAuthService>();
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddSingleton<IStaticResourceService, StaticResourceService>();
+builder.Services.AddSingleton<IApprovedEmailsService, ApprovedEmailsService>();
 builder.Services.AddSingleton<IURLShortenerService, URLShortenerService>();
 builder.Services.AddSingleton<ICacheEventService, CacheEventService>();
 builder.Services.AddSingleton<UserLogoutManager>();

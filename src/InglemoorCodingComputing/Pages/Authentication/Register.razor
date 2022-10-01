@@ -3,6 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject IUserAuthService UserAuthService
 @inject IUserService UserService
+@inject IApprovedEmailsService ApprovedEmailsService
 @inject IEmailService EmailService
 @inject ILogger<Register> Logger
 @using System.Security.Cryptography
@@ -106,6 +107,8 @@
         error = null;
         if (await UserAuthService.UserWithEmail(request.Email.Trim()) is not null)
             error = "Email in use.";
+        else if (!await ApprovedEmailsService.EmailApprovedAsync(request.Email.Trim()))
+            error = "Email not valid";
         else
         {
             token = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();

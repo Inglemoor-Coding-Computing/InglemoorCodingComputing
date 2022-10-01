@@ -1,0 +1,95 @@
+﻿@page "/dashboard/approved-emails"
+@layout DashboardLayout
+@inject NavigationManager NavigationManager
+@inject IUserStateService UserStateService
+@inject IApprovedEmailsService ApprovedEmailsService
+@attribute [Authorize(Roles="Admin")]
+<AdminCheck/>
+
+<PageTitle>Approved Emails</PageTitle>
+
+<div class="p-3">
+    <h3 class="text-3xl font-semibold dark:text-indigo-300">Approved Emails</h3>
+    <div class="flex flex-col space-y-3 pt-4">
+        <div class="flex flex-col space-y-2 w-fit rounded-xl border-2 border-indigo-500 p-3">
+            <label for="email" class="block font-semibold">Add approved domain or email</label>
+            <input @bind=email class="px-3 py-2 rounded-xl text-slate-900 dark:text-gray-200 bg-gray-100 dark:bg-slate-700 focus:outline-none" id="email"/>
+            <label for="description" class="block font-semibold">Description</label>
+            <input @bind=description class="px-3 py-2 rounded-xl text-slate-900 dark:text-gray-200 bg-gray-100 dark:bg-slate-700 focus:outline-none" id="description"/>
+            <button @onclick=ApproveAsync class="mx-1 px-2 py-1 text-white bg-indigo-500 rounded-xl hover:bg-indigo-600">Create</button>
+            <div class="text-rose-500">
+                @error
+            </div>
+        </div>
+
+        @if (loading)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <Virtualize Items="@approvals" >
+                <div class="flex justify-between px-3 py-2 m-2 bg-gray-100 rounded-md dark:bg-slate-900" @key=context.Id>
+                    <p class="font-semibold">@context.Email</p>
+                    <p>@context.Description</p>
+                    
+                    <div class="flex space-x-6">
+                        <button class="p-1 rounded-md text-rose-500 hover:text-white hover:bg-rose-500" @onclick="() => DeleteAsync(context)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </Virtualize>
+        }
+    </div>
+</div>
+
+@code {
+    private string? error;
+    private bool loading = true;
+    private string email = string.Empty;
+    private string description = string.Empty;
+    private List<EmailApproval> approvals = new();
+    private async Task DeleteAsync(EmailApproval emailApproval)
+    {
+        loading = true;
+        await InvokeAsync(StateHasChanged);
+
+        await ApprovedEmailsService.UnapproveEmailAsync(emailApproval);
+        approvals = await ApprovedEmailsService.ApprovedEmailsAsync().ToListAsync();
+
+        loading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ApproveAsync()
+    {
+        error = null;
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            error = "Email cannot be empty";
+            await InvokeAsync(StateHasChanged);
+            return; 
+        }
+        loading = true;
+        await InvokeAsync(StateHasChanged);
+        await ApprovedEmailsService.ApproveEmailAsync(new(Guid.NewGuid(), email, (await UserStateService.CurrentAsync()).Id!, description));
+        approvals = await ApprovedEmailsService.ApprovedEmailsAsync().ToListAsync();
+
+        loading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            approvals = await ApprovedEmailsService.ApprovedEmailsAsync().ToListAsync();
+
+            loading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}
