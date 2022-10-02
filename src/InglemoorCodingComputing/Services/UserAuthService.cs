@@ -41,6 +41,31 @@ public sealed class UserAuthService : IUserAuthService
         return null;
     }
 
+    public async Task<UserAuth?> TryReadUserAsync(Guid id)
+    {
+        try
+        {
+            return (await _container.ReadItemAsync<UserAuth>(id.ToString(), new(id.ToString()))).Resource;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<bool> TryDeleteUserAsync(Guid id)
+    {
+        try
+        {
+            await _container.DeleteItemAsync<UserAuth>(id.ToString(), new(id.ToString()));
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     /// <summary>
     /// Authenticates user.
     /// </summary>

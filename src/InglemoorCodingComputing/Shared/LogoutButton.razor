@@ -23,8 +23,8 @@
         // Logout.
         await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/logout", "" });
         
-        if ((await AuthState).User.FindFirstValue(ClaimTypes.NameIdentifier) is string id)
-            UserLogoutManager.Logout(Guid.Parse(id));
+        if ((await AuthState).User.FindFirstValue(ClaimTypes.NameIdentifier) is string id && Guid.TryParse(id, out var guid))
+            UserLogoutManager.Logout(guid);
         
         NavigationManager.NavigateTo(ReturnUrl ?? NavigationManager.BaseUri, true);
     }

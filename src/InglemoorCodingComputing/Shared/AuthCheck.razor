@@ -9,13 +9,17 @@
     [CascadingParameter]
     protected Task<AuthenticationState> AuthState { get; set; } = default!;
 
-    public async void OnLogout(Guid id)
+    public async void OnLogout(Guid id, bool force)
     {
         var user = (await AuthState).User;
         if (user.Identity?.IsAuthenticated is true &&
             user.FindFirstValue(ClaimTypes.NameIdentifier) is string userId && 
             Guid.Parse(userId) == id)
         {
+            var resp = await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/ping", "" });
+            if (!force && resp is 200)
+                return;
+
             await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/logout", "" });
             NavigationManager.NavigateTo(NavigationManager.Uri, true);
         }
@@ -26,6 +30,7 @@
         if (firstRender)
         {
             UserLogoutManager.UserLoggedOut += OnLogout;
+            await Task.Delay(5000);
             var user = (await AuthState).User;
             if (user.Identity?.IsAuthenticated is true && await UserStateService.CurrentAsync() is null)
             {

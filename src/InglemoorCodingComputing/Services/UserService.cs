@@ -11,19 +11,51 @@ public sealed class UserService : IUserService
         _container = cosmosClient.GetContainer(configuration["Cosmos:DatabaseName"], configuration["Cosmos:UserContainer"]);
     }
 
-    public Task CreateUser(AppUser user) =>
-        _container.CreateItemAsync(user, partitionKey: new(user.Id.ToString()));
-
-    public async Task<AppUser> ReadUser(Guid id) =>
-        (await _container.ReadItemAsync<AppUser>(id.ToString(), new(id.ToString()))).Resource;
-
-    public Task UpdateUser(AppUser user) =>
-        _container.ReplaceItemAsync(user, user.Id.ToString(), new(user.Id.ToString()));
-
-    public async Task DeleteUser(Guid id)
+    public async Task<bool> TryCreateUserAsync(AppUser user)
     {
-        var user = await ReadUser(id);
-        await UpdateUser(user with { DeletedDate = DateTime.UtcNow });
+        try
+        {
+            await _container.CreateItemAsync(user, partitionKey: new(user.Id.ToString()));
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<AppUser?> TryReadUserAsync(Guid id)
+    {
+        try
+        {
+            var res = (await _container.ReadItemAsync<AppUser>(id.ToString(), new(id.ToString()))).Resource;
+            return res.DeletedDate.HasValue ? null : res;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<bool> TryUpdateUserAsync(AppUser user)
+    {
+        try
+        {
+            await _container.ReplaceItemAsync(user, user.Id.ToString(), new(user.Id.ToString()));
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> TryDeleteUserAsync(Guid id)
+    {
+        var user = await TryReadUserAsync(id);
+        if (user is null)
+            return false;
+        return await TryUpdateUserAsync(user with { DeletedDate = DateTime.UtcNow });
     }
 
     public async IAsyncEnumerable<AppUser> ReadAllUsers()

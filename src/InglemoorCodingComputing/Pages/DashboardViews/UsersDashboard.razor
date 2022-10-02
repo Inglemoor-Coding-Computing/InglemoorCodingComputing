@@ -1,99 +1,183 @@
-﻿@page "/dashboard/users"
+﻿@page "/dashboard/users/{id:guid?}"
 @layout DashboardLayout
 @inject NavigationManager NavigationManager
 @inject IUserService UserService
 @inject IUserAuthService UserAuthService
+@inject IJSRuntime JSRuntime
 @attribute [Authorize(Roles="Admin")]
 <AdminCheck/>
 
 <PageTitle>Users</PageTitle>
 
 <div class="p-3">
-    <h3 class="text-3xl font-semibold dark:text-indigo-300">Users</h3>
-    <div class="flex flex-col space-y-3">
+    <a href="/dashboard/users" class="text-3xl font-semibold dark:text-indigo-300">Users</a>
+    <div class="text-rose-500"> 
+        @error
+    </div>
+    @if (appUser.HasValue)
+    {
+        var (user, auth) = appUser.Value;
+        <div class="mt-8 space-y-2">
+            <div class="flex space-x-4 items-center">
+                <h3 class="text-4xl font-semibold">
+                    @user.FirstName 
+                    @user.LastName             
+                </h3>
+                @if (auth.IsAdmin)
+                {
+                    <p class="bg-amber-400 w-fit px-2 py-1 rounded-full font-extrabold text-white text-base">admin</p>
+                }
+            </div>
+            @if (user.StudentNumber.HasValue)
+            {
+                <h4>nsd-@user.StudentNumber.Value</h4>
+            }
+            <p class="font-mono">UUID: @user.Id</p>
+            <p>Email: @user.Email</p>
+            <p>Graduation Year: @user.GraduationYear</p>
+            <p>Account Created: @user.CreatedDate UTC</p>
 
-        @if (loading)
-        {
-            <p>Loading...</p>
-        }
-        else
-        {
-            <Virtualize Items="@users" >
-                <div class="flex justify-between px-3 py-2 m-2 bg-gray-100 rounded-md dark:bg-slate-900">
-                    <div>
-                        <span class="font-semibold">
-                            Name:
-                        </span>
-                        @context?.FirstName @context?.LastName
-                    
-                        @if (context?.StudentNumber is not null)
-                        {
-                            <span class="font-sm"> (nsd-@context?.StudentNumber)</span>
-                        }
-                    </div>
-
-                    @context?.Id
-                    <div>
-                        <span class="font-semibold">
-                            Email:
-                        </span>
-                        @context?.Email
-                    </div>
-                    <div>
-                        <span class="font-semibold">Grade: </span>
-                        @AppUser.GraduationYearToGradeLevel(context?.GraduationYear ?? 0)
-                        (class of @context?.GraduationYear)
-                    </div>
-
-                    <div>
-                        <span class="font-semibold">
-                            Created:
-                        </span>
-                         @context?.CreatedDate
-                    </div>
-
-                    @if (context?.DeletedDate is not null)
-                    {
-                        <div>
-                            <span class="font-semibold">
-                                Deleted:
-                            </span>
-                            @context.DeletedDate
-                        </div>
-                    }
-
-                    <button @onclick="async () => { if (context is not null) await DeleteAsync(context.Id); }" class="ml-2 text-rose-500 hover:text-gray-100 dark:hover:text-bg-slate-900 hover:bg-rose-500">
+            <h5 class="text-2xl font-semibold">Authentication</h5>
+            <p>Email: @auth.Email</p>
+            @if (auth.GoogleId is not null)
+            {
+                <div class="my-2">
+                    <p class="font-bold">Google Sign-in enabled</p>
+                    <p class="font-mono">Google Id: @auth.GoogleId</p>
+                </div>
+            }
+            @if (auth.Hash is not null)
+            {
+                <div class="my-2">
+                    <p class="font-bold">Email/Password Sign-in enabled</p>
+                </div>
+            }
+            <div class="text-rose-400 font-bold">
+                @if (auth.IsAdmin)
+                {
+                    <p>Cannot delete admin accounts</p>    
+                }
+                else
+                {
+                    <button @onclick=DeleteAsync class="flex content-center ml-2 text-rose-500 hover:text-gray-100 dark:hover:text-bg-slate-900 hover:bg-rose-500 py-1 px-2 rounded-xl">
+                    Delete User
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                     </button>
-                </div>
-            </Virtualize>
-        }
-    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="flex flex-col space-y-3">
+            @if (loading)
+            {
+                <p>Loading...</p>
+            }
+            else
+            {
+                <Virtualize Items="@users" >
+                    <a href="/dashboard/users/@context.Id" class="flex justify-between px-3 py-2 m-2 bg-gray-100 hover:bg-gray-50 rounded-md dark:bg-slate-900 dark:hover:bg-slate-800">
+                        <div>
+                            <span class="font-semibold">
+                                Name:
+                            </span>
+                            @context?.FirstName @context?.LastName
+                    
+                            @if (context?.StudentNumber is not null)
+                            {
+                                <span class="font-sm"> (nsd-@context?.StudentNumber)</span>
+                            }
+                        </div>
+
+                        @context?.Id
+                        <div>
+                            <span class="font-semibold">
+                                Email:
+                            </span>
+                            @context?.Email
+                        </div>
+                        <div>
+                            <span class="font-semibold">Grade: </span>
+                            @AppUser.GraduationYearToGradeLevel(context?.GraduationYear ?? 0)
+                            (class of @context?.GraduationYear)
+                        </div>
+
+                        <div>
+                            <span class="font-semibold">
+                                Created:
+                            </span>
+                             @context?.CreatedDate
+                        </div>
+
+                        @if (context?.DeletedDate is not null)
+                        {
+                            <div>
+                                <span class="font-semibold">
+                                    Deleted:
+                                </span>
+                                @context.DeletedDate
+                            </div>
+                        }
+
+                        
+                    </a>
+                </Virtualize>
+            }
+        </div>
+    }
 </div>
 
 @code {
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private (AppUser, UserAuth)? appUser;
+    private string? error;
     private bool loading = true;
     private List<AppUser> users = new();
 
-    private async Task DeleteAsync(Guid id)
+    private async Task DeleteAsync()
     {
+        var code = Random.Shared.Next(1000, 9000);
+        if (await JSRuntime.InvokeAsync<string>("prompt", $"Enter {code} to confirm deletion.") != code.ToString())
+            return;
+        error = null;
+        if (!appUser.HasValue || !Id.HasValue)
+            return;
+
         loading = true;
         await InvokeAsync(StateHasChanged);
-        await UserService.DeleteUser(id);
+        if (!await UserAuthService.TryDeleteUserAsync(Id.Value))
+            error = "Could not delete user auth entry";
+        if (!await UserService.TryDeleteUserAsync(Id.Value))
+            error = "Could not delete user";
+
         users = await UserService.ReadAllUsers().ToListAsync();
 
         loading = false;
+        NavigationManager.NavigateTo("/dashboard/users");
         await InvokeAsync(StateHasChanged);
     }
 
+    private string route = string.Empty;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender || route != NavigationManager.Uri)
         {
+            route = NavigationManager.Uri;
             users = await UserService.ReadAllUsers().Where(x => !x.DeletedDate.HasValue).ToListAsync();
             loading = false;
+            appUser = null;
+            if (Id.HasValue)
+            {
+                var user = await UserService.TryReadUserAsync(Id.Value);
+                var auth = await UserAuthService.TryReadUserAsync(Id.Value);
+                if (user is not null && auth is not null)
+                    appUser = (user, auth);
+            }
             await InvokeAsync(StateHasChanged);
         }
     }
