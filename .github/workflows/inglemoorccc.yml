@@ -47,6 +47,7 @@ jobs:
         publish-profile: ${{ secrets.inglemoorccc_FFFF }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
     - name: Compress package
+      if: ${{ github.event_name == 'push' }}
       run: dotnet fsi scripts/deploy.fsx
     - name: Deploy to production
       if: ${{ github.event_name == 'push' }}
