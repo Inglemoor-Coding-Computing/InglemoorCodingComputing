@@ -72,7 +72,7 @@
     {
         try
         {
-            await UserService.UpdateUser(user! with
+            await UserService.TryUpdateUserAsync(user! with
                 {
                     FirstName = request.FirstName,
                     LastName = request.LastName,

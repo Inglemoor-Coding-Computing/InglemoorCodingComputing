@@ -49,4 +49,8 @@ public interface IUserAuthService
     Task ChangePasswordAsync(UserAuth userAuth, string password);
 
     event EventHandler<Guid>? OnAdminRevoked;
+
+    Task<bool> TryDeleteUserAsync(Guid id);
+
+    Task<UserAuth?> TryReadUserAsync(Guid id);
 }

@@ -58,7 +58,7 @@
                 {
                     @foreach (var user in attendees)
                     {
-                        <p>@user.FirstName @user.LastName  -  @user.Email</p>
+                        <a href="/dashboard/users/@user.Id">@user.FirstName @user.LastName  -  @user.Email</a>
                     }
                 }
             }
@@ -125,7 +125,10 @@
     {
         attendees = new();
         foreach (var userId in Meeting.RegisteredAttendees)
-            attendees.Add(await UserService.ReadUser(userId));
+        {
+            if (await UserService.TryReadUserAsync(userId) is AppUser user)
+                attendees.Add(user);
+        }
         await InvokeAsync(StateHasChanged);
     }
 

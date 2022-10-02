@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -23,6 +24,10 @@ public class AuthController : ControllerBase
         _userService = userService;
         _logger = logger;
     }
+
+    [HttpPost("ping")]
+    public IActionResult Ping() =>
+        User.Identity?.IsAuthenticated is true ? Ok() : Unauthorized();
 
     [HttpPost("login")]
     public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request)
@@ -71,15 +76,19 @@ public class AuthController : ControllerBase
             if (await _userAuthService.AddGoogleUserAsync(emailAddress, googleId) is UserAuth userAuth)
             {
                 // Register user
-                await _userService.CreateUser(new()
+                if (!await _userService.TryCreateUserAsync(new()
+                    {
+                        Id = userAuth.Id,
+                        Email = emailAddress,
+                        FirstName = firstName,
+                        LastName = lastName,
+                        GraduationYear = -1,
+                        CreatedDate = DateTime.UtcNow,
+                    }))
                 {
-                    Id = userAuth.Id,
-                    Email = emailAddress,
-                    FirstName = firstName,
-                    LastName = lastName,
-                    GraduationYear = -1,
-                    CreatedDate = DateTime.UtcNow,
-                });
+                    await HttpContext.SignOutAsync();
+                    return Redirect("/authentication/login-failure?error=Failed%20to%20register");
+                }
             }
 
             if (await _userAuthService.UserWithGoogleIdAsync(googleId) is UserAuth userAuth2)
@@ -98,7 +107,7 @@ public class AuthController : ControllerBase
                 if (identity is not null)
                     await HttpContext.SignInAsync(new(identity));
 
-                var user = await _userService.ReadUser(userAuth2.Id);
+                var user = await _userService.TryReadUserAsync(userAuth2.Id);
 
                 return Redirect(
                     user?.RegistrationIncomplete is true

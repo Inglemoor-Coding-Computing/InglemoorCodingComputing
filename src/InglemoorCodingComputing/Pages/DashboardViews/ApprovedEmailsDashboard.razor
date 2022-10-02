@@ -75,7 +75,7 @@
         }
         loading = true;
         await InvokeAsync(StateHasChanged);
-        await ApprovedEmailsService.ApproveEmailAsync(new(Guid.NewGuid(), email, (await UserStateService.CurrentAsync()).Id!, description));
+        await ApprovedEmailsService.ApproveEmailAsync(new(Guid.NewGuid(), email, (await UserStateService.CurrentAsync())!.Id, description));
         approvals = await ApprovedEmailsService.ApprovedEmailsAsync().ToListAsync();
 
         loading = false;

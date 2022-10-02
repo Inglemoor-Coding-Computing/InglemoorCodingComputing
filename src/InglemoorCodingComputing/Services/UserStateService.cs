@@ -22,15 +22,9 @@ public sealed class UserStateService : IUserStateService, IDisposable
                 return null;
             else
             {
-                var id = Guid.Parse(auth.User.FindFirstValue(ClaimTypes.NameIdentifier));
-                try
-                {
-                    return await _userService.ReadUser(id);
-                }
-                catch
-                {
-                    return null;
-                }
+                if (Guid.TryParse(auth.User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
+                    return await _userService.TryReadUserAsync(id);
+                return null;
             }
         });
     }
@@ -50,15 +44,9 @@ public sealed class UserStateService : IUserStateService, IDisposable
                 return null;
             else
             {
-                var id = Guid.Parse(auth.User.FindFirstValue(ClaimTypes.NameIdentifier));
-                try
-                {
-                    return await _userService.ReadUser(id);
-                }
-                catch
-                {
-                    return null;
-                }
+                if (Guid.TryParse(auth.User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
+                    return await _userService.TryReadUserAsync(id);
+                return null;
             }
         });
     }
@@ -73,8 +61,10 @@ public sealed class UserStateService : IUserStateService, IDisposable
             current = Task.FromResult<AppUser?>(null);
         else
         {
-            var id = Guid.Parse(auth.User.FindFirstValue(ClaimTypes.NameIdentifier));
-            current = Task.FromResult<AppUser?>(await _userService.ReadUser(id));
+            if (Guid.TryParse(auth.User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
+                current = _userService.TryReadUserAsync(id);
+            else
+                current = Task.FromResult<AppUser?>(null);
         }
         Updated?.Invoke(this, await current);
     }

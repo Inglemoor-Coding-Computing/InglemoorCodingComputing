@@ -129,7 +129,7 @@
         if (inputToken == token && await UserAuthService.AddUserAsync(request.Email.Trim(), request.Password) is UserAuth userAuth)
         {
             // Create user
-            await UserService.CreateUser(new()
+            if (!await UserService.TryCreateUserAsync(new()
             {
                 Id = userAuth.Id,
                 Email = request.Email.Trim(),
@@ -137,7 +137,11 @@
                 LastName = request.LastName,
                 GraduationYear = AppUser.GradeLevelToGraduationYear(request.GradeLevel),
                 CreatedDate = DateTime.UtcNow,
-            });
+            }))
+            {
+                error = "Invalid Code";
+                return;
+            }
 
             Logger.LogInformation($"User '{request.FirstName} {request.LastName}' ({userAuth.Id}) registered.");
 
