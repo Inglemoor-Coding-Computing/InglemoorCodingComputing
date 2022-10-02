@@ -3,7 +3,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -33,7 +32,9 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request)
     {
         await HttpContext.SignOutAsync();
-        var result = await _userAuthService.AuthenticateAsync(request.Email.Trim(), request.Password);
+        var ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "UNKNOWN";
+        var userAgent = Request.Headers["User-Agent"].ToString();
+        var result = await _userAuthService.AuthenticateAsync(request.Email.Trim(), request.Password, ip, userAgent);
         if (result is null)
             return BadRequest("Invalid Credentials.");
 
@@ -91,7 +92,9 @@ public class AuthController : ControllerBase
                 }
             }
 
-            if (await _userAuthService.UserWithGoogleIdAsync(googleId) is UserAuth userAuth2)
+            var ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "UNKNOWN";
+            var userAgent = Request.Headers["User-Agent"].ToString();
+            if (await _userAuthService.AuthenticateWithGoogleIdAsync(googleId, ip, userAgent) is UserAuth userAuth2)
             {
                 // Login
                 // Replace the id claim from google with our own

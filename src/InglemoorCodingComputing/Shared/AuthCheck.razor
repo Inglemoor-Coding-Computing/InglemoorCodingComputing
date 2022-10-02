@@ -16,8 +16,7 @@
             user.FindFirstValue(ClaimTypes.NameIdentifier) is string userId && 
             Guid.Parse(userId) == id)
         {
-            var resp = await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/ping", "" });
-            if (!force && resp is 200)
+            if (!force && await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/ping", "" }) is 200)
                 return;
 
             await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/logout", "" });
