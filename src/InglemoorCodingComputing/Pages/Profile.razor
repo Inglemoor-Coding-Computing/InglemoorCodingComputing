@@ -1,6 +1,9 @@
 ﻿@page "/profile"
+@using UAParser
 @inject IUserStateService UserStateService
 @inject IUserAuthService UserAuthService
+@inject IJSRuntime JSRuntime
+@inject UserLogoutManager UserLogoutManager
 @attribute [Authorize]
 
 <PageTitle>Profile</PageTitle>
@@ -10,9 +13,9 @@
     <div class="flex flex-col pt-2 mx-auto space-y-3 sm:w-3/4 text-slate-900 dark:text-white">
         <h2 class="text-3xl font-semibold text-center">@user?.FirstName @user?.LastName</h2>
     
-        <div class="mx-auto">
+        <div class="flex flex-col items-center">
             <h4 class="text-lg">User info:</h4>
-            <div class="flex flex-col inline-block p-4 mt-2 space-y-1 border-2 border-indigo-500 rounded-lg w-fit">
+            <div class="flex flex-col p-4 mt-2 space-y-1 border-2 border-indigo-500 rounded-lg w-fit">
                 <div>
                     <span class="font-semibold">
                         Name:
@@ -40,15 +43,64 @@
                     (class of @user?.GraduationYear)
                 </div>
             </div>
+            <h4 class="pt-3 text-lg font-semibold">Sign in history (past 7 days)</h4>
+            <p>Showing @firstLogins.Count of @allLogins.Count</p>
+            <div class="flex flex-col p-4 mt-2 space-y-3 border-2 border-indigo-500 rounded-lg w-fit">
+                @if (firstLogins.Count is 0)
+                {
+                    <p>No logins in this time period.</p>
+                }
+                else
+                {
+                    @foreach (var attempt in showAllLogins ? allLogins : firstLogins)
+                    {
+                        var c = Parser.GetDefault().Parse(attempt.UserAgent);
+                        <div>
+                            <h5 class="font-semibold text-md">@TimeZoneInfo.ConvertTimeBySystemTimeZoneId(attempt.Time, "Pacific Standard Time").ToString("f") (pacific)</h5>
+                            <div class="pl-4">
+                                <p>@attempt.IPAddress</p>
+                                <p class="font-mono">@attempt.UserAgent</p>
+                                <p class="italic">Authenticated with @attempt.Method</p>
+                                <p class="font-semibold">@c.OS</p>
+                                <p class="font-semibold">@c.UA.Family @string.Join('.', new [] { c.UA.Major, c.UA.Minor, c.UA.Patch}.Where(x => !string.IsNullOrEmpty(x)))</p>
+                            </div>
+                        </div>
+                    }
+                    @if (allLogins.Count != firstLogins.Count)
+                    {
+                        <button @onclick="() => showAllLogins = !showAllLogins" class="italic font-bold text-indigo-500 hover:underline">@(showAllLogins ? "Hide" : "Show all")</button>
+                    }
+                }
+            </div>
+            <p class="pt-2 text-lg font-bold">Something wrong?</p>
+            <div class="flex flex-col items-center space-y-3">
+                <a href="/authentication/change-password" class="text-indigo-500 underline hover:text-indigo-400">Change Password</a> 
+                <button @onclick=SignOutAsync class="px-2 py-1 font-bold text-white rounded-full bg-rose-500 hover:bg-rose-400">Sign of all devices</button>
+            </div>
         </div>
     </div>
 }
 
 @code {
     private AppUser? user;
+    private UserAuth? auth;
+    private List<LoginAttempt> allLogins = new();
+    private List<LoginAttempt> firstLogins = new();
+    private bool showAllLogins;
     protected override async Task OnInitializedAsync()
     {
         user = await UserStateService.CurrentAsync();
+        auth = user is not null ? await UserAuthService.TryReadUserAsync(user.Id) : null;
+        allLogins.AddRange(auth?.LoginAttepts?.OrderByDescending(x => x.Time)?.Where(x => x.Successful) ?? Array.Empty<LoginAttempt>());
+        firstLogins = allLogins.Take(10).ToList();
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SignOutAsync()
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", new[] {"Are you sure you want to sign out of all devices?"}) || user is null)
+            return;
+
+        UserLogoutManager.Logout(user.Id, true);
     }
 }

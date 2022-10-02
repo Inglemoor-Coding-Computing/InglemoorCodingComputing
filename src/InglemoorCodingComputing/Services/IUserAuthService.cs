@@ -7,8 +7,10 @@ public interface IUserAuthService
     /// </summary>
     /// <param name="username">student id</param>
     /// <param name="password"></param>
+    /// <param name="ipAddress"></param>
+    /// <param name="userAgent"></param>
     /// <returns></returns>
-    Task<UserAuth?> AuthenticateAsync(string email, string password);
+    Task<UserAuth?> AuthenticateAsync(string email, string password, string? ipAddress = null, string? userAgent = null);
 
     /// <summary>
     /// Registers user.
@@ -44,7 +46,7 @@ public interface IUserAuthService
 
     Task<UserAuth?> UserWithEmail(string email);
 
-    Task<UserAuth?> UserWithGoogleIdAsync(string id);
+    Task<UserAuth?> AuthenticateWithGoogleIdAsync(string id, string? ipAddress = null, string? userAgent = null);
 
     Task ChangePasswordAsync(UserAuth userAuth, string password);
 
@@ -53,4 +55,6 @@ public interface IUserAuthService
     Task<bool> TryDeleteUserAsync(Guid id);
 
     Task<UserAuth?> TryReadUserAsync(Guid id);
+
+    Task<bool> TryUpdateSecurityStamp(Guid id);
 }

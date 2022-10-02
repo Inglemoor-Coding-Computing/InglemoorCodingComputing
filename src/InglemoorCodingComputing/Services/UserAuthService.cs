@@ -71,8 +71,10 @@ public sealed class UserAuthService : IUserAuthService
     /// </summary>
     /// <param name="username">student id</param>
     /// <param name="password"></param>
+    /// <param name="ipAddress"></param>
+    /// <param name="userAgent"></param>
     /// <returns></returns>
-    public async Task<UserAuth?> AuthenticateAsync(string email, string password)
+    public async Task<UserAuth?> AuthenticateAsync(string email, string password, string? ipAddress = null, string? userAgent = null)
     {
         if (await UserWithEmail(email) is not UserAuth user || user.Hash is null)
             return null;
@@ -82,7 +84,15 @@ public sealed class UserAuthService : IUserAuthService
         var testHash = GetHash(password, hash.Salt);
 
         if (!testHash.SequenceEqual(hash.Hash))
+        {
+            if (ipAddress is not null && userAgent is not null)
+                await AddLoginAttempt(user, ipAddress, userAgent, false, "Password");
+            
             return null;
+        }
+
+        if (ipAddress is not null && userAgent is not null)
+            await AddLoginAttempt(user, ipAddress, userAgent, true, "Password");
 
         if (hash.Hash.Length != _hashSize || hash.Salt.Length != _saltSize || hash.Parallelism != _parallelism || hash.Memory != _memorySize || hash.Iterations != _iterations)
         {
@@ -107,7 +117,7 @@ public sealed class UserAuthService : IUserAuthService
 
         var hash = GetHash(password, out var salt);
         var id = Guid.NewGuid();
-        UserAuth user = new(id, email, false, new(hash, salt, _iterations, _parallelism, _memorySize), null);
+        UserAuth user = new(id, email, false, new(hash, salt, _iterations, _parallelism, _memorySize));
         await _container.CreateItemAsync(user, new(id.ToString()));
         return user;
     }
@@ -118,7 +128,7 @@ public sealed class UserAuthService : IUserAuthService
             return null;
 
         var id = Guid.NewGuid();
-        UserAuth user = new(id, email, false, null, null)
+        UserAuth user = new(id, email, false, null)
         {
             GoogleId = googleId,
         };
@@ -210,14 +220,39 @@ public sealed class UserAuthService : IUserAuthService
         await _container.ReplaceItemAsync(newUser, userAuth.Id.ToString(), new(userAuth.Id.ToString()));
     }
 
-    public async Task<UserAuth?> UserWithGoogleIdAsync(string id)
+    public async Task<UserAuth?> AuthenticateWithGoogleIdAsync(string id, string? ipAddress = null, string? userAgent = null)
     {
         var iterator = _container.GetItemLinqQueryable<UserAuth>().Where(x => x.GoogleId == id).ToFeedIterator();
         while (iterator.HasMoreResults)
         {
             foreach (var item in await iterator.ReadNextAsync())
+            {
+                if (ipAddress is not null && userAgent is not null)
+                    await AddLoginAttempt(item, ipAddress, userAgent, true, "Google");
                 return item;
+            }
         }
         return null;
+    }
+
+    private Task AddLoginAttempt(UserAuth user, string ipAddress, string userAgent, bool success, string method) =>
+        _container.ReplaceItemAsync(user with { LoginAttepts = user.LoginAttepts
+                                                                   .Where(x => DateTime.UtcNow - x.Time <= TimeSpan.FromDays(7))
+                                                                   .Append(new(ipAddress, userAgent, true, DateTime.UtcNow, method))
+                                                                   .ToList() }, user.Id.ToString());
+    public async Task<bool> TryUpdateSecurityStamp(Guid id)
+    {
+        try
+        {
+            var auth = await TryReadUserAsync(id);
+            if (auth is null)
+                return false;
+            await _container.ReplaceItemAsync(auth with { SecurityTimeStamp = DateTime.UtcNow }, auth.Id.ToString());
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
