@@ -41,6 +41,8 @@ public class AuthController : ControllerBase
         List<Claim> claims = new()
         {
             new Claim(ClaimTypes.NameIdentifier, result.Id.ToString()),
+            new Claim(ClaimTypes.Sid, DateTime.UtcNow.ToString("o")),
+            new Claim(ClaimTypes.AuthenticationMethod, "Password")
         };
         if (result.IsAdmin)
             claims.Add(new(ClaimTypes.Role, "Admin"));
@@ -102,10 +104,16 @@ public class AuthController : ControllerBase
                 var claim = User.Claims.Where(x => x.Type == ClaimTypes.NameIdentifier).FirstOrDefault();
 
                 identity?.RemoveClaim(claim);
-                identity?.AddClaim(new(ClaimTypes.NameIdentifier, userAuth2.Id.ToString()));
-
+                List<Claim> claims = new()
+                {
+                    new Claim(ClaimTypes.NameIdentifier, userAuth2.Id.ToString()),
+                    new Claim(ClaimTypes.Sid, DateTime.UtcNow.ToString("o")),
+                    new Claim(ClaimTypes.AuthenticationMethod, "Google")
+                };
                 if (userAuth2.IsAdmin)
-                    identity?.AddClaim(new(ClaimTypes.Role, "Admin"));
+                    claims.Add(new(ClaimTypes.Role, "Admin"));
+
+                identity?.AddClaims(claims);
 
                 if (identity is not null)
                     await HttpContext.SignInAsync(new(identity));

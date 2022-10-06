@@ -79,7 +79,6 @@ builder.Services.AddScoped<IUserStateService, UserStateService>();
 builder.Services.AddScoped<IMeetingsService, MeetingsService>();
 builder.Services.AddScoped<IStaticPageService, StaticPageService>();
 builder.Services.AddScoped<TimeZoneService>();
-builder.Services.AddScoped<CustomCookieAuthenticationEvents>();
 
 builder.Services.AddTransient<IRouteAnalyzerService, RouteAnalyzerService>();
 builder.Services.AddTransient(typeof(ICacheService<>), typeof(PersistentCacheService<>));
