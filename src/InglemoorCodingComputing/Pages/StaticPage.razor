@@ -8,16 +8,37 @@
     <PageTitle>Not found</PageTitle>
     <NotFound/>
 }
-else if (contents is null)
+else if (content is null)
 {
     <PageTitle>Loading</PageTitle>
 }
+else if (content.Authorized)
+{
+    <AuthorizeView Roles="@(content.AdminAuthorized ? "Admin" : null)">
+        <Authorized>
+            @if (content.AdminAuthorized)
+            {
+                <AdminCheck/>
+            }
+            <PageTitle>@content.Title</PageTitle>
+            <div class="flex justify-center">
+                <div class="styled-prose">
+                    @((MarkupString)content.Rendered)
+                </div>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <PageTitle>Not found</PageTitle>
+            <NotFound/>
+        </NotAuthorized>
+    </AuthorizeView>
+}
 else
 {
-    <PageTitle>@title</PageTitle>
+    <PageTitle>@content.Title</PageTitle>
     <div class="flex justify-center">
-        <div class="px-2 py-1 m-1 prose bg-transparent rounded-md grow prose-h1:font-semibold lg:prose-lg prose-pre:font-code prose-pre:bg-transparent dark:prose-invert">
-            @((MarkupString)contents)
+        <div class="styled-prose">
+            @((MarkupString)content.Rendered)
         </div>
     </div>
 }
@@ -28,11 +49,9 @@ else
 
     public string? oldRoute;
 
-    private string? contents;
+    private Models.StaticPage? content;
 
-    private string? title;
-
-    private bool notFound = false;
+    private bool notFound;
 
     private async Task RenderContentAsync()
     {
@@ -41,14 +60,12 @@ else
             notFound = true;
             return;
         }
-        var page = await StaticPageService.FindAsync(PageRoute);
-        if (page is null || !page.Live)
+        content = await StaticPageService.FindAsync(PageRoute);
+        if (content is null || !content.Live)
         {
             notFound = true;
             return;
         }
-        contents = page.Rendered;
-        title = page.Title;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -65,4 +82,5 @@ else
 
     protected override Task OnInitializedAsync() =>
         RenderContentAsync();
+
 }

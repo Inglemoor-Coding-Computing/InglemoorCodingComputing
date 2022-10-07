@@ -3,3 +3,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.styled-prose {
+    @apply px-2 py-1 m-1 prose bg-transparent rounded-md grow prose-h1:font-semibold lg:prose-lg prose-pre:font-code prose-pre:bg-transparent dark:prose-invert;
+}
