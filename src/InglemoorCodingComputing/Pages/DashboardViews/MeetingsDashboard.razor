@@ -50,7 +50,7 @@
     {
         <div class="pt-5">
             Next Meeting:
-            <MeetingView Meeting=@next Editable=true/>
+            <MeetingView Meeting=@next Editable=true OnDelete="async x => { await MeetingsService.DeleteAsync(x.Id); await InvokeAsync(StateHasChanged); }"/>
         </div>
     }
     <div class="overflow-auto">

@@ -1,9 +1,9 @@
 ﻿@inject IUserStateService UserStateService
 @inject IUserService UserService
 @implements IDisposable
-<div class="px-3 sm:px-6 py-4 w-fit my-3 rounded-xl text-slate-900 dark:text-slate-200 bg-gray-100 dark:bg-slate-900 flex align-middle">
+<div class="px-3 sm:px-6 py-4 w-fit my-3 rounded-xl text-slate-900 dark:text-slate-200 bg-gray-100 dark:bg-gray-700 flex align-middle">
     <div>
-        <div class="text-xl font-semibold">@Meeting.Name</div>
+        <div class="text-xl font-bold">@Meeting.Name</div>
         <div class="text-lg font-semibold">@Meeting.Date.ToString("D")</div>
         <div class="italic">@Meeting.StartTime.ToString("t") / @Meeting.EndTime.ToString("t")</div>
         <div>@Meeting.Details</div>
@@ -22,7 +22,7 @@
                     }
                     else
                     {
-                        <button @onclick=TakeAttendanceAsync class="bg-indigo-500 text-white active:bg-indigo-600 py-1 px-2 rounded-lg">Take Attendance Now!</button>
+                        <button @onclick=TakeAttendanceAsync class="bg-indigo-500 text-white active:bg-indigo-700 hover:bg-indigo-600 py-1 px-2 rounded-xl mt-3">Take Attendance Now!</button>
                     }
                 </Authorized>
             </AuthorizeView>
