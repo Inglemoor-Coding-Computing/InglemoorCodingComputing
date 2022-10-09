@@ -8,6 +8,7 @@ global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.Azure.Cosmos;
 
 using System.Globalization;
+using SixLabors.ImageSharp.Web.DependencyInjection;
 
 CultureInfo.CurrentCulture = new("en-US");
 
@@ -24,6 +25,7 @@ async Task<CosmosClient> ConfigureCosmos(IConfigurationSection config)
     _ = await db.CreateContainerIfNotExistsAsync(new(config["StaticPagesContainer"], "/id"));
     _ = await db.CreateContainerIfNotExistsAsync(new(config["ShortenedURLContainer"], "/shortened"));
     _ = await db.CreateContainerIfNotExistsAsync(new(config["ApprovedEmailsContainer"], "/id"));
+    _ = await db.CreateContainerIfNotExistsAsync(new(config["GroupsContainer"], "/id"));
     return cosmos;
 }
 
@@ -40,6 +42,7 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 // Add services to the container.
+builder.Services.AddImageSharp();
 builder.Services.AddLocalization();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
@@ -110,6 +113,7 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseImageSharp();
 app.UseStaticFiles();
 app.UseCookiePolicy();
 
