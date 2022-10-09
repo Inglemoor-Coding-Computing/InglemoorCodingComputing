@@ -7,6 +7,7 @@ module.exports = {
         extend: {
             fontFamily: {
                 'sans': ['"Inter"', ...defaultTheme.fontFamily.sans],
+                'mono': ['"Inconsolata"', ...defaultTheme.fontFamily.mono],
                 'code': ['"Cascadia Code"']
             },
         },
