@@ -399,3 +399,5 @@ FodyWeavers.xsd
 
 # tailwind css output
 tailwind.css
+
+src/InglemoorCodingComputing/wwwroot/is-cache/
