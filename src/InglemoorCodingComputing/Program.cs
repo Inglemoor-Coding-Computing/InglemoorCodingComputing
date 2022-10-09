@@ -25,7 +25,6 @@ async Task<CosmosClient> ConfigureCosmos(IConfigurationSection config)
     _ = await db.CreateContainerIfNotExistsAsync(new(config["StaticPagesContainer"], "/id"));
     _ = await db.CreateContainerIfNotExistsAsync(new(config["ShortenedURLContainer"], "/shortened"));
     _ = await db.CreateContainerIfNotExistsAsync(new(config["ApprovedEmailsContainer"], "/id"));
-    _ = await db.CreateContainerIfNotExistsAsync(new(config["GroupsContainer"], "/id"));
     return cosmos;
 }
 
