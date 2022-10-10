@@ -1,0 +1,128 @@
+﻿@page "/groups"
+@inject IUserStateService UserStateService
+@inject IGroupsService GroupsService
+@inject IUserService UserService
+<PageTitle>Groups</PageTitle>
+<h1 class="text-bold font-semibold text-slate-900 dark:text-white text-6xl text-center">Groups</h1>
+<AuthorizeView>
+    <Authorized>
+        @if (user is not null)
+        {
+            <div class="space-y-4">
+                @foreach (var g in groups)
+                {
+                    <StaticEmbed Tag="@($"_groups/content/{g}")"/>
+                }
+            </div>
+            <div class="flex flex-col items-center space-y-2">
+                <h4 class="text-indigo-500 text-3xl font-bold">Manage Groups</h4>
+                <Virtualize Items="@(user.Groups.Select(x => ((groupsR.TryGetValue(x, out var v) ? v : "Group not found"), x)).ToList())" Context=ctx>
+                    <div class="flex space-x-2 bg-indigo-400 w-fit px-3 py-1 rounded-full font-bold text-sm text-white text-base">
+                        @ctx.Item1
+                        <button @onclick="() => RemoveGroup(ctx.Item2)" class="text-white hover:bg-rose-500 rounded-lg hover:text-white ml-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                            </svg>
+                        </button>
+                    </div>
+                </Virtualize>
+
+                <div class="space-x-1 mx-auto">
+                    <input @bind=groupName class="text-sm py-2 px-3 rounded-2xl bg-gray-200 dark:bg-slate-700 dark:text-gray-200 text-slate-900 w-32 focus:outline-none" placeholder="group name"/>
+                    <button class="text-sm py-1 px-2 bg-indigo-500 text-white hover:bg-indigo-600 rounded-lg" @onclick=AddGroup>Join Group</button>
+                    <div class="text-rose-500">
+                        @groupError
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="flex justify-center pt-5 justify-self-center">
+                <svg class="w-5 h-5 text-indigo-500 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <div class="font-2xl text-slate-900 dark:text-white">
+            Sign in to view.
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private AppUser? user;
+    private List<string> groups = new();
+    private string groupName = string.Empty;
+    private string? groupError;
+
+    private async Task LoadAsync()
+    {
+        user = await UserStateService.CurrentAsync();
+        groups.Clear();
+        if (user is null)
+            return;
+
+        groupsR.Clear();
+        foreach (var id in user.Groups)
+        {
+            if (await GroupsService.TryReadGroup(id) is Group group)
+            {
+                groups.Add(group.Name);
+                groupsR[group.Id] = group.Name;
+            }
+        }
+    }
+
+    private Dictionary<Guid, string> groupsR = new();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadAsync();
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task AddGroup()
+    {
+        if (user is null)
+            return;
+        groupError = null;
+
+        if (await GroupsService.TryReadGroup(groupName) is not Group g)
+        {
+            groupError = "Could not find group";
+            return;
+        }
+        if (user.Groups.Contains(g.Id))
+        {
+            groupError = "You're already in that group";
+            return;
+        }
+
+        groupName = string.Empty;
+        var newGroups = user.Groups.Append(g.Id);
+        if (await UserService.TryUpdateUserAsync(user with { Groups = newGroups.ToList() }))
+        {
+            UserStateService.Update();
+            await LoadAsync();
+        }
+    }
+
+    private async Task RemoveGroup(Guid group)
+    {
+        if (user is null)
+            return;
+        var newGroups = user.Groups.Where(x => x != group);
+        if (await UserService.TryUpdateUserAsync(user with { Groups = newGroups.ToList() }))
+        {
+            UserStateService.Update();
+            await LoadAsync();
+        }
+    }
+}
