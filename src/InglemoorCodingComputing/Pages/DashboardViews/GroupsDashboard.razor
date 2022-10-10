@@ -1,0 +1,123 @@
+﻿@page "/dashboard/groups"
+@layout DashboardLayout
+@inject IGroupsService GroupsService
+@inject IJSRuntime JSRuntime
+@attribute [Authorize(Roles="Admin")]
+<AdminCheck/>
+
+<PageTitle>Groups</PageTitle>
+
+<div class="p-3">
+    <a href="/dashboard/users" class="text-3xl font-semibold dark:text-indigo-300">Groups</a>
+
+    <div class="flex flex-col space-y-2 w-fit rounded-xl border-2 border-indigo-500 p-3 my-3">
+        <label for="group" class="block font-semibold">Create Group</label>
+        <input @bind=groupName class="px-3 py-2 rounded-xl text-slate-900 dark:text-gray-200 bg-gray-100 dark:bg-slate-700 focus:outline-none" id="group"/>
+        <button @onclick=CreateAsync class="mx-1 px-2 py-1 text-white bg-indigo-500 rounded-xl hover:bg-indigo-600">Create</button>
+        <div class="text-rose-500">
+            @error
+        </div>
+    </div>
+
+    <div class="flex flex-col space-y-3">
+        @if (groups is null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <Virtualize Items="@groups" >
+                <div class="flex justify-between px-3 py-2 m-2 bg-gray-100 rounded-md dark:bg-slate-900">
+                    <div>
+                        <span class="font-semibold">
+                            Name:
+                        </span>
+                        @context.Name
+                    </div>
+                    
+                    <div>
+                        <span class="font-semibold">
+                            Id:
+                        </span>
+                        <span class="font-mono">
+                            @context.Id
+                        </span>
+                    </div>
+
+
+                    <div>
+                        <span class="font-semibold">
+                            Created:
+                        </span>
+                        @context.Creation
+                    </div>
+
+                    <button class="p-1 rounded-md text-rose-500 hover:text-white hover:bg-rose-500" @onclick="() => DeleteAsync(context)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </Virtualize>
+        }
+    </div>
+</div>
+
+@code {
+    private string? error;
+    private string? groupName;
+    private List<Group>? groups;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            groups = await GroupsService.AllGroupsAsync().ToListAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task DeleteAsync(Group group)
+    {
+        error = null;
+        var code = Random.Shared.Next(1000, 9000);
+        if (await JSRuntime.InvokeAsync<string>("prompt", $"Enter {code} to confirm deletion of {group.Name}.") != code.ToString())
+            return;
+        if (!await GroupsService.TryDeleteGroup(group.Id))
+            error = "Failed to delete group.";
+        groups = null;
+        await InvokeAsync(StateHasChanged);
+        groups = await GroupsService.AllGroupsAsync().OrderBy(x => x.Creation).ToListAsync();
+    }
+
+    private async Task CreateAsync()
+    {
+        error = null;
+        if (string.IsNullOrWhiteSpace(groupName))
+        {
+            error = "Group name cannot be empty.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (groups?.Any(x => x.Name == groupName) is true)
+        {
+            error = "Group already exists";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (await GroupsService.TryCreateGroup(groupName) is null)
+        {
+            error = "Failed to create group";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        groups = null;
+        groupName = string.Empty;
+        await InvokeAsync(StateHasChanged);
+        groups = await GroupsService.AllGroupsAsync().OrderBy(x => x.Creation).ToListAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -23,6 +23,8 @@ public record AppUser
 
     public DateTime? DeletedDate { get; init; }
 
+    public IReadOnlyList<Guid> Groups { get; init; } = Array.Empty<Guid>();
+
     public static int AcademicYear => ToAcademicYear(DateTime.UtcNow);
 
     public bool RegistrationIncomplete => GraduationYear == -1;

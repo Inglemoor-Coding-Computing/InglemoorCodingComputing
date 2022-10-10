@@ -175,7 +175,7 @@
                     finalRoute = null;
                     routeInvalid = "Cannot be empty";
                 }
-                else if (Regex.IsMatch(Route, @"[^_a-zA-Z0-9+\-\/]", RegexOptions.None, TimeSpan.FromMilliseconds(100)))
+                else if (Regex.IsMatch(Route, @"[^_ a-zA-Z0-9+\-\/]", RegexOptions.None, TimeSpan.FromMilliseconds(100)))
                 {
                     finalRoute = null;
                     routeInvalid = "Invalid Characters";
