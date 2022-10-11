@@ -18,7 +18,7 @@
             </p>
             <div class="py-2">
                 <a href="@($"/api/auth/login-google{(ReturnUrl is null ? "" : "?returnUrl=" + Uri.EscapeDataString(ReturnUrl))}")" class="flex h-12 mx-auto bg-white border rounded-full w-52 dark:text-gray-200 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 dark:border-gray-900">
-                    <img class="p-2" src="/png/google-logo.png"/>
+                    <img class="p-2 aspect-square" src="/png/google-logo.png?width=32" srcset="/png/google-logo.png?width=32 32px, /png/google-logo.png?width=64 64px, /png/google-logo.png?width=128 128px"/>
                     <p class="flex items-center text-slate-900 dark:text-slate-200">Sign in with Google</p>
                 </a>
             </div>
@@ -28,12 +28,12 @@
             <EditForm Model=@request OnValidSubmit=@SubmitAsync class="flex flex-col px-6 pb-4 space-y-2">
                 <div>
 				    <label for="email" class="block mb-1 text-sm font-medium text-slate-900 dark:text-gray-300">Email</label>
-				    <InputText type="text" @bind-Value=request.Email id="email" class="focus:outline-none bg-gray-50 text-gray-900 sm:text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full px-4 py-3 dark:bg-gray-600 dark:placeholder-gray-400 dark:text-white"/>
+				    <InputText type="text" @bind-Value=request.Email id="email" class="focus:outline-none bg-gray-100 text-gray-900 sm:text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full px-4 py-3 dark:bg-gray-600 dark:placeholder-gray-400 dark:text-white"/>
                 </div>
                 <div>
 				    <label for="password" class="block mb-1 text-sm font-medium text-slate-900 dark:text-gray-300">Password</label>
 				    <div class="relative">
-                        <InputText type="@(viewPassword ? "text" : "password")" @bind-Value=request.Password id="password" class="font-mono focus:outline-none bg-gray-50 text-gray-900 sm:text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full px-4 py-3 dark:bg-gray-600 dark:placeholder-gray-400 dark:text-white"/>
+                        <InputText type="@(viewPassword ? "text" : "password")" @bind-Value=request.Password id="password" class="font-mono focus:outline-none bg-gray-100 text-gray-900 sm:text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full px-4 py-3 dark:bg-gray-600 dark:placeholder-gray-400 dark:text-white"/>
                         <button type="button" @onclick="@(() => {viewPassword = !viewPassword; })" class="absolute inset-y-0 right-0 flex items-center pr-3 leading-5 text-indigo-500">
                             @if(viewPassword)
                             {
