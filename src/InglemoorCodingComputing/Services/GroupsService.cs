@@ -2,15 +2,18 @@
 
 using Microsoft.Azure.Cosmos.Linq;
 using System.Collections.Generic;
+using System.Text.Json;
 
-public class GroupsService : IGroupsService
+public sealed class GroupsService : IGroupsService
 {
     private readonly ILogger _logger;
+    private readonly ICacheService<GroupsService> _cacheService;
     private readonly Container _container;
 
-    public GroupsService(IConfiguration configuration, CosmosClient cosmosClient, ILogger<GroupsService> logger)
+    public GroupsService(IConfiguration configuration, CosmosClient cosmosClient, ILogger<GroupsService> logger, ICacheService<GroupsService> cacheService)
     {
         _logger = logger;
+        _cacheService = cacheService;
         _container = cosmosClient.GetContainer(configuration["Cosmos:DatabaseName"], configuration["Cosmos:GroupsContainer"]);
     }
 
@@ -54,6 +57,7 @@ public class GroupsService : IGroupsService
     {
         try
         {
+            _cacheService.Delete(id.ToString());
             var id_ = id.ToString();
             await _container.DeleteItemAsync<Group>(id_, new(id_));
             return true;
@@ -86,11 +90,19 @@ public class GroupsService : IGroupsService
 
     public async Task<Group?> TryReadGroup(Guid id)
     {
+        var id_ = id.ToString();
         try
         {
-            var id_ = id.ToString();
+            using (var stream = _cacheService.TryRead(id_))
+            {
+                if (stream is not null)
+                    return await JsonSerializer.DeserializeAsync<Group?>(stream);
+            }
             var res = await _container.ReadItemAsync<Group>(id_, new(id_));
-            return res.Resource;
+            var group = res.Resource;
+            using var ws = _cacheService.Add(id_);
+            await JsonSerializer.SerializeAsync(ws, group);
+            return group;
         }
         catch (Exception e)
         {
@@ -103,6 +115,7 @@ public class GroupsService : IGroupsService
     {
         try
         {
+            _cacheService.Delete(group.Id.ToString());
             await _container.ReplaceItemAsync(group, group.Id.ToString());
             return true;
         }
