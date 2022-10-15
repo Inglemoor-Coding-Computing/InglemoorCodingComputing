@@ -17,7 +17,7 @@ public sealed class StaticPageService : IStaticPageService
 
     public async Task CreateAsync(StaticPage page)
     {
-        await _container.CreateItemAsync(page, partitionKey: new(page.Id.ToString()));
+        await _container.CreateItemAsync(page with { Creation = DateTime.UtcNow }, partitionKey: new(page.Id.ToString()));
         Changed?.Invoke();
     }
 
@@ -25,7 +25,10 @@ public sealed class StaticPageService : IStaticPageService
     {
         var page = await ReadAsync(id);
         _cacheService.Delete(page.Path);
-        await _container.DeleteItemAsync<StaticPage>(id.ToString(), new(id.ToString()));
+        var id_ = id.ToString();
+
+        await _container.ReplaceItemAsync(page with { Deletion = DateTime.UtcNow }, id_);
+
         Changed?.Invoke();
     }
 
@@ -42,7 +45,10 @@ public sealed class StaticPageService : IStaticPageService
         while (iterator.HasMoreResults)
         {
             foreach (var item in await iterator.ReadNextAsync())
-                page = item;
+            {
+                if (!item.Deletion.HasValue)
+                    page = item;
+            }
         }
 
         if (page is null)
@@ -80,15 +86,21 @@ public sealed class StaticPageService : IStaticPageService
         while (iterator.HasMoreResults)
         {
             foreach (var item in await iterator.ReadNextAsync())
-                yield return item;
+            {
+                if (!item.Deletion.HasValue)
+                    yield return item;
+            }
         }
     }
 
     public async Task UpdateAsync(StaticPage page)
     {
         _cacheService.Delete(page.Path);
-        await _container.ReplaceItemAsync(page, page.Id.ToString(), new(page.Id.ToString()));
-        Changed?.Invoke();
+        var oldId = page.Id;
+        var newId = Guid.NewGuid();
+
+        await _container.CreateItemAsync(page with { Creation = DateTime.UtcNow, Id = newId, PreviousVersion = oldId});
+        await DeleteAsync(oldId);
     }
 
     public event Action? Changed;

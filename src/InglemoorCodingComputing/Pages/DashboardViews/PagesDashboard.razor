@@ -216,7 +216,7 @@
     {
         if (Disabled)
             return;
-        if (await StaticPageService.FindAsync(Route) is Models.StaticPage old)
+        if (await StaticPageService.FindAsync(Route) is Models.StaticPage old && !old.Deletion.HasValue)
             await StaticPageService.UpdateAsync(new()
             {
                 Id = old.Id,
