@@ -46,7 +46,7 @@ public sealed class StaticPageService : IStaticPageService
         {
             foreach (var item in await iterator.ReadNextAsync())
             {
-                if (!item.Deletion.HasValue)
+                if (!item.Deletion.HasValue && item.Area is null)
                     page = item;
             }
         }
@@ -55,6 +55,35 @@ public sealed class StaticPageService : IStaticPageService
             return null;
 
         using var writeStream = _cacheService.Add(path);
+        JsonSerializer.Serialize(writeStream, page);
+
+        return page;
+    }
+
+    public async Task<StaticPage?> FindAsync(string path, string area)
+    {
+        var cachePath = "AREA-PREFIX 🙅" + area + "AREA-SEPARATOR 🙅" + path;
+        if (_cacheService.TryRead(cachePath) is Stream stream)
+        {
+            using var _ = stream;
+            return JsonSerializer.Deserialize<StaticPage>(stream);
+        }
+
+        var iterator = _container.GetItemLinqQueryable<StaticPage>().Where(x => x.Path == path && x.Area == area).ToFeedIterator();
+        StaticPage? page = null;
+        while (iterator.HasMoreResults)
+        {
+            foreach (var item in await iterator.ReadNextAsync())
+            {
+                if (!item.Deletion.HasValue)
+                    page = item;
+            }
+        }
+
+        if (page is null)
+            return null;
+
+        using var writeStream = _cacheService.Add(cachePath);
         JsonSerializer.Serialize(writeStream, page);
 
         return page;

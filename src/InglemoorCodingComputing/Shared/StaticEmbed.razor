@@ -19,6 +19,9 @@ else if (contents is not null)
     [Parameter, EditorRequired]
     public string Tag { get; set; } = string.Empty;
 
+    [Parameter]
+    public string? Area { get; set; }
+
     private string? contents;
 
     private bool notFound = false;
@@ -31,7 +34,7 @@ else if (contents is not null)
             await InvokeAsync(StateHasChanged);
             return;
         }
-        var page = await StaticPageService.FindAsync(Tag);
+        var page = await (Area is null ? StaticPageService.FindAsync(Tag) : StaticPageService.FindAsync(Tag, Area));
         if (page is null || !page.Live)
         {
             notFound = true;
