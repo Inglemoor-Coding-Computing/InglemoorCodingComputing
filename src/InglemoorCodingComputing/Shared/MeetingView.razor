@@ -1,5 +1,6 @@
 ﻿@inject IUserStateService UserStateService
 @inject IUserService UserService
+@inject IJSRuntime JSRuntime
 @implements IDisposable
 <div class="px-3 sm:px-6 py-4 w-fit my-3 rounded-xl text-slate-900 dark:text-slate-200 bg-gray-100 dark:bg-gray-700 flex align-middle">
     <div>
@@ -29,22 +30,29 @@
         }
         @if (ShowAttendees)
         {
-            <div class="flex">
-                <button @onclick="() => attendeesOpen = !attendeesOpen" class="p-1 rounded-lg text-slate-900 dark:text-white hover:text-white hover:bg-indigo-500">
-                    @if (attendeesOpen)
-                    {
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
-                        </svg>
-                    }
-                    else
-                    {
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                        </svg>
-                    }
+            <div class="flex justify-between">
+                <div class="flex">
+                    <button @onclick="() => attendeesOpen = !attendeesOpen" class="p-1 rounded-lg text-slate-900 dark:text-white hover:text-white hover:bg-indigo-500">
+                        @if (attendeesOpen)
+                        {
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                            </svg>
+                        }
+                        else
+                        {
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        }
+                    </button>
+                    <h4 class="text-md font-bold">Attendance: @Meeting.RegisteredAttendees.Count</h4>
+                </div>
+                <button aria-label="Download Attendance" class="ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 hover:text-indigo-500 duration-300" @onclick=DownloadAsync>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
                 </button>
-                <h4 class="text-md">Attendance: @Meeting.RegisteredAttendees.Count</h4>
             </div>
             @if (attendeesOpen)
             {
@@ -56,13 +64,14 @@
                 }
                 else
                 {
-                    @foreach (var user in attendees)
-                    {
-                        <a href="/dashboard/users/@user.Id">@user.FirstName @user.LastName  -  @user.Email</a>
-                    }
+                    <div class="flex flex-col">
+                        @foreach (var user in attendees)
+                        {
+                            <a class="pl-4 hover:text-indigo-500" href="/dashboard/users/@user.Id">@user.FirstName @user.LastName  -  @user.Email</a>
+                        }
+                    </div>
                 }
             }
-                
         }
     </div>
     @if (Editable)
@@ -102,10 +111,30 @@
 
     private AppUser? user;
 
+    private IJSObjectReference? module;
+
+    private async Task DownloadAsync()
+    {
+        await FindUsersAsync();
+        if (module is null || attendees is null)
+            return;
+        using MemoryStream stream = new();
+        using StreamWriter sw = new(stream);
+        await sw.WriteLineAsync("StudentId, FirstName, LastName, Grade, UUID");
+        foreach (var attendee in attendees)
+            await sw.WriteLineAsync($"\"{attendee.StudentNumber}\",\"{attendee.FirstName}\",\"{attendee.LastName}\",\"{AppUser.GraduationYearToGradeLevel(attendee.GraduationYear)}\",\"{attendee.Id}\"");
+        sw.Flush();
+        stream.Position = 0;
+        using DotNetStreamReference streamRef = new(stream);
+        await module.InvokeVoidAsync("downloadFileFromStream", "attendance.csv", streamRef);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            if (Editable)
+                module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Shared/MeetingView.razor.js");
             user = await UserStateService.CurrentAsync();
             UserStateService.Updated += OnUserUpdated;
             await InvokeAsync(StateHasChanged);
