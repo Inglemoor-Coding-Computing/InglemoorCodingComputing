@@ -41,8 +41,6 @@
                 <option value="@nameof(StaticPageType.Html)">Html</option>
                 <option value="@nameof(StaticPageType.Text)">Text</option>
             </select>
-            <label for="live">Live:</label>
-            <input id="live" type="checkbox" @bind=live/>
             <label for="auth">Authenticated:</label>
             <input id="auth" type="checkbox" @bind=auth/>
             @if (auth)
@@ -82,8 +80,11 @@
             <a target="_blank" class=@($"font-mono font-bold {(context.Live ? "text-emerald-400 dark:text-emerald:600 hover:underline" : "text-rose-500")}") href=@($"page/{context.Path}")>/@context.Path</a>
             <span>@context.Title</span>
             <div class="flex space-x-6">
+                <button @onclick="() => StaticPageService.TrySetPublishStatusAsync(context.Path, !context.Live)" class="@($"text-white font-semibold px-2 rounded-xl {(context.Live ? "bg-emerald-500 hover:bg-emerald-600" : "bg-rose-500 hover:bg-rose-600")}")">
+                    @(context.Live ? "Live" : "Not live")
+                </button>
                 <!--Today on what not to do...-->
-                <button class="hover:text-amber-500" @onclick="() => { Route = context.Path; title = context.Title; live = context.Live; auth = context.Authorized; admin = context.AdminAuthorized; type = context.Type; Content = context.Raw; }">
+                <button class="hover:text-amber-500" @onclick="() => { Route = context.Path; title = context.Title; auth = context.Authorized; admin = context.AdminAuthorized; type = context.Type; Content = context.Raw; }">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                     </svg>
@@ -99,7 +100,6 @@
 </div>
 
 @code {
-    private bool live = true;
     private bool auth;
     private bool admin;
     private string _route = string.Empty;
@@ -220,7 +220,7 @@
             await StaticPageService.UpdateAsync(new()
             {
                 Id = old.Id,
-                Live = live,
+                Live = false,
                 Authorized = auth,
                 AdminAuthorized = auth && admin,
                 Title = title,
@@ -233,7 +233,7 @@
             await StaticPageService.CreateAsync(new()
             {
                 Id = Guid.NewGuid(),
-                Live = live,
+                Live = false,
                 Authorized = auth,
                 AdminAuthorized = auth && admin,
                 Title = title,

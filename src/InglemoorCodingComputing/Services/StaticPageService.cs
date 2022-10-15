@@ -103,5 +103,17 @@ public sealed class StaticPageService : IStaticPageService
         await DeleteAsync(oldId);
     }
 
+    public async Task<bool> TrySetPublishStatusAsync(string path, bool live)
+    {
+        var page = await FindAsync(path);
+        if (page is null) 
+            return false;
+        _cacheService.Delete(path);
+
+        await _container.ReplaceItemAsync(page with { Live = live }, page.Id.ToString());
+        Changed?.Invoke();
+        return true;
+    }
+
     public event Action? Changed;
 }
