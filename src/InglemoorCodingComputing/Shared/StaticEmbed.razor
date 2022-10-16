@@ -2,14 +2,14 @@
 @inject IJSRuntime JSRuntime
 @inject ILogger<StaticEmbed> Logger
 
-@if (notFound)
+@if (notFound && Area is null)
 {
     <h3 class="text-rose-500">Content not found</h3>
 }
 else if (contents is not null)
 {
     <div class="flex justify-center">
-        <div class="px-2 py-1 m-1 prose bg-transparent rounded-md grow prose-h1:font-semibold lg:prose-lg xl:prose-xl prose-pre:font-code prose-pre:bg-transparent dark:prose-invert">
+        <div class="styled-prose">
             @((MarkupString)contents)
         </div>
     </div>
@@ -18,6 +18,9 @@ else if (contents is not null)
 @code {
     [Parameter, EditorRequired]
     public string Tag { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Area { get; set; }
 
     private string? contents;
 
@@ -31,7 +34,7 @@ else if (contents is not null)
             await InvokeAsync(StateHasChanged);
             return;
         }
-        var page = await StaticPageService.FindAsync(Tag);
+        var page = await (Area is null ? StaticPageService.FindAsync(Tag) : StaticPageService.FindAsync(Tag, Area));
         if (page is null || !page.Live)
         {
             notFound = true;

@@ -71,6 +71,8 @@ builder.Services.AddSingleton<IGroupsService, GroupsService>();
 builder.Services.AddSingleton<ICacheEventService, CacheEventService>();
 builder.Services.AddSingleton<UserLogoutManager>();
 builder.Services.AddSingleton<URLShortenerEndpointDataSource>();
+builder.Services.AddSingleton<IPublishedStaticContentEditContextProvider, PublishedStaticContentEditContextProvider>();
+builder.Services.AddSingleton<IStaticPageService, StaticPageService>();
 builder.Services.AddSingleton(_ =>
 {
     Ganss.XSS.HtmlSanitizer x = new();
@@ -81,7 +83,6 @@ builder.Services.AddSingleton(_ =>
 builder.Services.AddScoped<IThemeService, ThemeService>();
 builder.Services.AddScoped<IUserStateService, UserStateService>();
 builder.Services.AddScoped<IMeetingsService, MeetingsService>();
-builder.Services.AddScoped<IStaticPageService, StaticPageService>();
 builder.Services.AddScoped<TimeZoneService>();
 
 builder.Services.AddTransient<IRouteAnalyzerService, RouteAnalyzerService>();
