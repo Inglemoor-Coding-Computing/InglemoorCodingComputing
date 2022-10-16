@@ -24,7 +24,7 @@ public sealed class StaticPageService : IStaticPageService
     public async Task DeleteAsync(Guid id)
     {
         var page = await ReadAsync(id);
-        _cacheService.Delete(page.Path);
+        _cacheService.Delete(page.Area is null ? page.Path : AreaCachePath(page.Path, page.Area));
         var id_ = id.ToString();
 
         await _container.ReplaceItemAsync(page with { Deletion = DateTime.UtcNow }, id_);
@@ -60,9 +60,14 @@ public sealed class StaticPageService : IStaticPageService
         return page;
     }
 
-    public async Task<StaticPage?> FindAsync(string path, string area)
+    private string AreaCachePath(string path, string area) =>
+        "AREA-PREFIX 🙅" + area + "AREA-SEPARATOR 🙅" + path;
+
+    public async Task<StaticPage?> FindAsync(string path, string? area)
     {
-        var cachePath = "AREA-PREFIX 🙅" + area + "AREA-SEPARATOR 🙅" + path;
+        if (area is null)
+            return await FindAsync(path);
+        var cachePath = AreaCachePath(path, area);
         if (_cacheService.TryRead(cachePath) is Stream stream)
         {
             using var _ = stream;
@@ -124,7 +129,7 @@ public sealed class StaticPageService : IStaticPageService
 
     public async Task UpdateAsync(StaticPage page)
     {
-        _cacheService.Delete(page.Path);
+        _cacheService.Delete(page.Area is null ? page.Path : AreaCachePath(page.Path, page.Area));
         var oldId = page.Id;
         var newId = Guid.NewGuid();
 
@@ -132,12 +137,13 @@ public sealed class StaticPageService : IStaticPageService
         await DeleteAsync(oldId);
     }
 
-    public async Task<bool> TrySetPublishStatusAsync(string path, bool live)
+    public async Task<bool> TrySetPublishStatusAsync(string path, bool live, string? area = null)
     {
         var page = await FindAsync(path);
         if (page is null) 
             return false;
-        _cacheService.Delete(path);
+        _cacheService.Delete(area is null ? path : AreaCachePath(path, area));
+
 
         await _container.ReplaceItemAsync(page with { Live = live }, page.Id.ToString());
         Changed?.Invoke();

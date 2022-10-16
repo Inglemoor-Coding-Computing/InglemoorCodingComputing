@@ -1,0 +1,128 @@
+﻿@inject IStaticPageService StaticPageService
+@inject IJSRuntime JSRuntime
+@inject Ganss.XSS.HtmlSanitizer HtmlSanitizer
+@using Markdig
+
+<div @attributes=AdditionalAttributes>
+    <div class="rounded-xl bg-gray-100 dark:bg-zinc-700 overflow-hidden grow flex flex-col">
+        <div class="grid grid-cols-2 text-slate-700 dark:text-slate-400 font-bold">
+            <button @onclick="() => previewing = false" class="@($"py-2 {(previewing ? "bg-gray-200 dark:bg-zinc-800" : "bg-gray-100 dark:bg-zinc-700")}")">Edit</button>
+            <button @onclick="() => previewing = true" class="@($"py-2 {(previewing ? "bg-gray-100 dark:bg-zinc-700" : "bg-gray-200 dark:bg-zinc-800")}")">Preview</button>
+        </div>
+        <div class="relative flex grow">
+            <div class="p-3 flex grow">
+                @if (previewing)
+                {
+                    <div class="flex grow p-2 bg-white dark:bg-zinc-800 rounded-lg">
+                        <div class="styled-prose">
+                            @((MarkupString)rendered)
+                        </div>
+                    </div>
+                }
+                else
+                {
+
+                    <textarea class="grow bg-gray-50 dark:bg-zinc-800 focus:outline-none overflow-auto resize-none rounded-md break-normal whitespace-pre px-2 py-1 break-normal whitespace-pre min-h-[100px] font-code" aria-hidden="true" @bind=Raw @bind:event="oninput"/>
+                    <div class="absolute bottom-0 right-0 transition duration-100">
+                        @if (changed)
+                        {
+                            @if (Context.AutoSave)
+                            {
+                                <p class="pr-6 pb-7 text-sm text-gray-500">auto-saved</p>
+                            }
+                            else
+                            {
+                                <button class="mr-5 mb-5 px-3 py-2 font-semibold text-white rounded-2xl bg-fuchsia-400/75 flex space-x-1" @onclick=Save>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                        <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span>
+                                        Save
+                                    </span>
+                                </button>
+                            }
+                        }
+                    </div>
+                    <div class="absolute bottom-0 left-0">
+                        <p class="pl-6 pb-7 text-sm text-gray-500">Markdown</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private string? error;
+    private string markdown = string.Empty;
+    private string rendered = string.Empty;
+    private string Raw 
+    {
+        get => markdown;
+        set
+        {
+            markdown = value;
+            _ = KeyPressed();
+        }
+    }
+    private bool previewing;
+
+    private bool queued;
+    private bool loading;
+    private bool changed;
+
+    private StaticPage? page;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private void Save()
+    {
+        if (page is null)
+            return;
+        changed = false;
+        Context.Saved(page with
+        {
+            Raw = markdown,
+            Rendered = rendered
+        });
+    }
+
+    private async Task KeyPressed()
+    {
+        if (loading)
+            queued = true;
+        else
+        {
+            do
+            {
+                loading = true;
+                queued = false;
+                rendered = HtmlSanitizer.Sanitize(Markdown.ToHtml(markdown, new MarkdownPipelineBuilder().UseAdvancedExtensions().Build()));
+                if (Context.AutoSave)
+                    Save();
+                changed = true;
+                await Task.Delay(200);
+                loading = false;
+            }
+            while (queued);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    [Parameter, EditorRequired]
+    public IStaticContentEditContext Context { get; set; } = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeVoidAsync("highlightSnippet");
+        if (firstRender)
+        {
+            page = await Context.InitialPageAsync();
+            rendered = page.Rendered;
+            markdown = page.Raw;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}

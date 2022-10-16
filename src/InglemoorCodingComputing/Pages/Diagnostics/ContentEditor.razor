@@ -1,0 +1,19 @@
+﻿@page "/diagnostics/editor"
+@inject IPublishedStaticContentEditContextProvider PSCECtxProvider
+@attribute [Authorize(Roles="Admin")]
+
+
+<AdminCheck />
+<PageTitle>Content Editor Diagnostic</PageTitle>
+
+<div class="flex flex-col items-center text-slate-900 dark:text-white text-center">
+    <h2 class="text-2xl font-bold">Content Editor Diagnostic</h2>
+    <StaticContentEditor Context=staticContentEditContext class="w-96 h-96 flex grow"/>
+    <StaticContentEditor Context=publishedStaticContentEditContext class="w-96 h-96 flex grow"/>
+</div>
+
+
+@code {
+    private StaticContentEditContext staticContentEditContext = new() {AutoSave = true};
+    private PublishedStaticContentEditContext publishedStaticContentEditContext => PSCECtxProvider.GetContentEditContext("hello-world");
+}

@@ -15,4 +15,5 @@ public record StaticPage
     public DateTime? Deletion { get; init; }
     public Guid? PreviousVersion { get; init; }
     public string? Area { get; init; }
+    public bool RenderedWithoutSanitization { get; init; }
 }
