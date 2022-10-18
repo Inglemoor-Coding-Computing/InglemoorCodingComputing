@@ -1,0 +1,37 @@
+@page "/dashboard/assignments"
+@layout DashboardLayout
+@inject IAssignmentService AssignmentService
+@attribute [Authorize(Roles="Admin")]
+<AdminCheck/>
+
+<PageTitle>Assignments</PageTitle>
+
+<div class="flex flex-col content-between h-screen p-3 justify">
+    <h3 class="text-3xl font-semibold dark:text-indigo-300">Assignments</h3>
+    <div class="flex pt-3 pb-1 pl-2">
+        <a href="/dashboard/assignments/create" class="px-2 py-1 font-semibold text-white bg-indigo-500 rounded-lg text-md hover:bg-indigo-600 w-fit">Create Assignment</a>
+    </div>
+    <div class="">
+        <Virtualize Items="@assignments" >
+            <a href="/dashboard/assignments/@context.Id" class="flex justify-between px-3 py-2 m-2 bg-gray-100 rounded-md dark:bg-slate-900" @key=context.Id>
+                <p class="@(context.Published ? "text-emerald-500" : "text-rose-500") font-semibold">@context.Title</p>
+                <p>Published: @context.Published</p>
+                <p>Creation: @context.Creation</p>
+                <p>Submissions: @context.Submissions.Count</p>
+            </a>
+        </Virtualize>
+    </div>
+</div>
+
+@code {
+    private List<Assignment> assignments = new();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            assignments = await AssignmentService.AllAsync().ToListAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}
+

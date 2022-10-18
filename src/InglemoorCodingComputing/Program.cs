@@ -70,6 +70,8 @@ builder.Services.AddSingleton<IStaticResourceService, StaticResourceService>();
 builder.Services.AddSingleton<IApprovedEmailsService, ApprovedEmailsService>();
 builder.Services.AddSingleton<IURLShortenerService, URLShortenerService>();
 builder.Services.AddSingleton<IGroupsService, GroupsService>();
+builder.Services.AddSingleton<IAssignmentService, AssignmentService>();
+builder.Services.AddSingleton<ISubmissionContentService, SubmissionContentService>();
 builder.Services.AddSingleton<ICacheEventService, CacheEventService>();
 builder.Services.AddSingleton<UserLogoutManager>();
 builder.Services.AddSingleton<URLShortenerEndpointDataSource>();

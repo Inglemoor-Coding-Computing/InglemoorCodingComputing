@@ -1,0 +1,113 @@
+@page "/dashboard/assignments/create"
+@layout DashboardLayout
+@inject IAssignmentService AssignmentService
+@inject IUserStateService UserStateService
+@inject IStaticPageService StaticPageService
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles="Admin")]
+<AdminCheck/>
+
+<PageTitle>New Assignment</PageTitle>
+
+<div class="flex flex-col content-between h-screen p-3 justify">
+    <div class="flex flex-col space-y-5">
+        <div>
+            <h3 class="text-3xl font-semibold">Create Assignment</h3>
+            <a href="/dashboard/assignments/" class="pl-2 italic font-semibold text-indigo-500 dark:text-indigo-400 hover:underline">return to all assignments</a>
+        </div>
+
+        <form class="flex flex-col space-y-2">
+            <div class="flex">
+                <div>
+                    <label for="title">Title:<span class="text-sm align-top text-rose-500">*</span></label>
+                    <input type="text" @bind=title id="title" class="block w-64 px-3 py-2 text-gray-900 bg-gray-100 focus:outline-none sm:text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-600 dark:placeholder-gray-400 dark:text-white"/>
+                </div>
+            </div>
+            <div>
+                <label for="published">Published:</label>
+                <input type="checkbox" @bind=published id="published" />
+            </div>
+        </form>
+    </div>
+    @if (staticContentEditContext is null)
+    {
+        <div class="flex mb-auto h-max grow">Editor loading.</div>
+    }
+    else
+    {
+        <StaticContentEditor Context=staticContentEditContext class="flex mb-auto h-max grow"/>
+    }
+    <div class="font-semibold text-center text-rose-500">
+        @error
+    </div>
+    <div class="flex justify-center pt-3 pb-1">
+        <button class="px-2 py-1 text-lg font-semibold text-white bg-indigo-500 rounded-lg w-fit" @onclick=CreateAsync>Create Assignment</button>
+    </div>
+</div>
+
+@code {
+    private string? error;
+
+    private string title = string.Empty;
+    private bool published = true;
+
+    private StaticContentEditContext? staticContentEditContext;
+
+    private readonly Guid id = Guid.NewGuid();
+
+    private Models.StaticPage? page;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            page = new()
+            {
+                Area = nameof(Assignment),
+                Id = Guid.NewGuid(),
+                Path = id.ToString(),
+                Live = true,
+                Creation = DateTime.UtcNow,
+                Type = StaticPageType.Markdown
+            };
+    
+            staticContentEditContext = new()
+            {
+                InitialPage = page,
+                AutoSave = true,
+                Saved = p => page = p
+            };
+            StateHasChanged();
+        }
+    }
+
+    private async Task CreateAsync()
+    {
+        error = null;
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            error = "Title required";
+            return;
+        }
+        var creator = await UserStateService.CurrentAsync();
+        if (creator is null || page is null) 
+            return;
+        if (!await AssignmentService.TryCreateAsync(new() 
+        { 
+            Id = id,
+            Published = published,
+            Title = title,
+            Creation = DateTime.UtcNow,
+            CreatedBy = creator.Id
+        }))
+        {
+            error = "Failed";
+            return;
+        }
+        await Task.Delay(200);
+        await StaticPageService.CreateAsync(page);
+        NavigationManager.NavigateTo("/dashboard/assignments");
+    }
+}
+
+

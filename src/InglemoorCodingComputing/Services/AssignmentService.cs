@@ -15,7 +15,7 @@ public class AssignmentService : IAssignmentService
 
     public async IAsyncEnumerable<Assignment> AllAsync()
     {
-        var iterator = _container.GetItemLinqQueryable<Assignment>().ToFeedIterator();
+        var iterator = _container.GetItemLinqQueryable<Assignment>().Where(x => !x.Deleted).ToFeedIterator();
         while (iterator.HasMoreResults)
         {
             foreach (var item in await iterator.ReadNextAsync())
