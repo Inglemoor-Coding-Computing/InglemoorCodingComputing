@@ -220,7 +220,7 @@
             await StaticPageService.UpdateAsync(new()
             {
                 Id = old.Id,
-                Live = false,
+                Live = old.Live,
                 Authorized = auth,
                 AdminAuthorized = auth && admin,
                 Title = title,

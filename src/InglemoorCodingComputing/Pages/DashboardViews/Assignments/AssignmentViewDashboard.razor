@@ -1,0 +1,104 @@
+@page "/dashboard/assignments/{id:guid}"
+@layout DashboardLayout
+@inject IAssignmentService AssignmentService
+@inject IUserStateService UserStateService
+@inject IPublishedStaticContentEditContextProvider PublishedStaticContentEditContextProvider
+@attribute [Authorize(Roles="Admin")]
+<AdminCheck/>
+
+<PageTitle>Assignment</PageTitle>
+
+<div class="flex flex-col p-3 ">
+    @if (assignment is null)
+    {
+        <h3 class="text-3xl font-semibold">Assignment not found.</h3>
+    }
+    else
+    {
+        <div class="flex flex-col justify-between h-screen space-y-5">
+            <div>
+                <h3 class="text-3xl font-semibold">Edit Assignment</h3>
+                <a href="/dashboard/assignments/" class="pl-2 italic text-indigo-500 hover:underline">return to all assignments</a>
+            </div>
+
+            <form class="flex flex-col space-y-2">
+                <div class="flex">
+                    <div>
+                        <label for="title">Title:<span class="text-sm align-top text-rose-500">*</span></label>
+                        <input type="text" @bind=title id="title" class="block w-64 px-3 py-2 text-gray-900 bg-gray-100 focus:outline-none sm:text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-600 dark:placeholder-gray-400 dark:text-white"/>
+                    </div>
+                </div>
+                <div>
+                    <label for="published">Published:</label>
+                    <input type="checkbox" @bind=published id="published" />
+                </div>
+                <div class="h-10">
+                    @if (NeedsSave)
+                    {
+                        <div role="button" @onclick=SaveAsync class="flex px-2 py-1 mb-5 mr-5 space-x-1 font-semibold text-white w-fit rounded-2xl bg-fuchsia-400/75">Save</div>
+                    }
+                    else
+                    {
+                        <p class="text-sm text-gray-500">Saved</p>
+                    }
+                </div>
+            </form>
+            @if (staticContentEditContext is null)
+            {
+                <div class="flex mb-auto h-max grow">Editor loading.</div>
+            }
+            else
+            {
+                <StaticContentEditor Context=staticContentEditContext class="flex mb-auto h-max grow"/>
+            }
+        </div>
+        <div class="font-semibold text-center text-rose-500">
+            @error
+        </div>
+
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private string? error;
+
+    private string title = string.Empty;
+
+    private bool published = true;
+
+    private IStaticContentEditContext? staticContentEditContext;
+
+    private Assignment? assignment;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            assignment = await AssignmentService.TryReadAsync(Id);
+            if (assignment is null) return;
+            title = assignment.Title;
+            published = assignment.Published;
+            staticContentEditContext = PublishedStaticContentEditContextProvider.GetContentEditContext(Id.ToString(), nameof(Assignment));
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private bool NeedsSave => published != assignment?.Published || title != assignment?.Title;
+
+    private async Task SaveAsync()
+    {
+        error = null;
+        if (assignment is null) return;
+        var n = assignment with {Published = published, Title = title};
+        if (!await AssignmentService.TryUpdateAsync(n))
+            error = "Failed to save.";
+        else
+            assignment = n;
+        await InvokeAsync(StateHasChanged);
+    }
+}
+
+
