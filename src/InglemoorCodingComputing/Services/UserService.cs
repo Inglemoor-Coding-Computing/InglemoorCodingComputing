@@ -1,13 +1,16 @@
 namespace InglemoorCodingComputing.Services;
 
-using Microsoft.Azure.Cosmos;
+using System.Text.Json;
 using Microsoft.Azure.Cosmos.Linq;
 
 public sealed class UserService : IUserService
 {
     private readonly Container _container;
-    public UserService(IConfiguration configuration, CosmosClient cosmosClient)
+    private readonly ICacheService<UserService> _cacheService;
+
+    public UserService(IConfiguration configuration, CosmosClient cosmosClient, ICacheService<UserService> cacheService)
     {
+        _cacheService = cacheService;
         _container = cosmosClient.GetContainer(configuration["Cosmos:DatabaseName"], configuration["Cosmos:UserContainer"]);
     }
 
@@ -28,8 +31,15 @@ public sealed class UserService : IUserService
     {
         try
         {
+            using (var stream = _cacheService.TryRead(id.ToString()))
+            {
+                if (stream is not null)
+                    return await JsonSerializer.DeserializeAsync<AppUser>(stream);
+            }
             var res = (await _container.ReadItemAsync<AppUser>(id.ToString(), new(id.ToString()))).Resource;
-            return res.DeletedDate.HasValue ? null : res;
+            using var ws = _cacheService.Add(id.ToString());
+            await JsonSerializer.SerializeAsync(ws, res);
+            return res;
         }
         catch
         {
@@ -41,6 +51,7 @@ public sealed class UserService : IUserService
     {
         try
         {
+            _cacheService.Delete(user.Id.ToString());
             await _container.ReplaceItemAsync(user, user.Id.ToString(), new(user.Id.ToString()));
             return true;
         }

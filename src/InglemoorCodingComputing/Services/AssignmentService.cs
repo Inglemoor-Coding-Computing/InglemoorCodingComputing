@@ -13,19 +13,28 @@ public class AssignmentService : IAssignmentService
         _cacheService = cacheService;
     }
 
-    public async IAsyncEnumerable<Assignment> AllAsync()
+    public async Task<IReadOnlyList<Assignment>> AllAsync()
     {
+        using (var stream = _cacheService.TryRead(nameof(AllAsync)))
+        {
+            if (stream is not null)
+                return await JsonSerializer.DeserializeAsync<IReadOnlyList<Assignment>>(stream) ?? Array.Empty<Assignment>();
+        }
         var iterator = _container.GetItemLinqQueryable<Assignment>().Where(x => !x.Deleted).ToFeedIterator();
+        List<Assignment> all = new();
         while (iterator.HasMoreResults)
         {
             foreach (var item in await iterator.ReadNextAsync())
-                yield return item;
+                all.Add(item);
         }
+        using var wstream = _cacheService.Add(nameof(AllAsync));
+        await JsonSerializer.SerializeAsync<IReadOnlyList<Assignment>>(wstream, all);
+        return all;
     }
 
     public async Task<bool> TryCreateAsync(Assignment assignment)
     {
-        _cacheService.Delete(assignment.Id.ToString());
+        _cacheService.Delete(nameof(AllAsync));
         try
         {
             await _container.CreateItemAsync(assignment);
@@ -40,6 +49,7 @@ public class AssignmentService : IAssignmentService
     public async Task<bool> TryDeleteAsync(Guid id)
     {
         _cacheService.Delete(id.ToString());
+        _cacheService.Delete(nameof(AllAsync));
         try
         {
             await _container.DeleteItemAsync<Assignment>(id.ToString(), new(id.ToString()));
@@ -75,6 +85,7 @@ public class AssignmentService : IAssignmentService
     public async Task<bool> TryUpdateAsync(Assignment assignment)
     {
         _cacheService.Delete(assignment.Id.ToString());
+        _cacheService.Delete(nameof(AllAsync));
         try
         {
             await _container.ReplaceItemAsync<Assignment>(assignment, assignment.Id.ToString());

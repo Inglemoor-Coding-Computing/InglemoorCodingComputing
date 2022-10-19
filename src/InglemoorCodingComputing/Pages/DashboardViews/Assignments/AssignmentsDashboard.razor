@@ -11,9 +11,9 @@
     <div class="flex pt-3 pb-1 pl-2">
         <a href="/dashboard/assignments/create" class="px-2 py-1 font-semibold text-white bg-indigo-500 rounded-lg text-md hover:bg-indigo-600 w-fit">Create Assignment</a>
     </div>
-    <div class="">
+    <div>
         <Virtualize Items="@assignments" >
-            <a href="/dashboard/assignments/@context.Id" class="flex justify-between px-3 py-2 m-2 bg-gray-100 rounded-md dark:bg-slate-900" @key=context.Id>
+            <a href="/dashboard/assignments/@context.Id" class="flex justify-between px-3 py-2 m-2 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800" @key=context.Id>
                 <p class="@(context.Published ? "text-emerald-500" : "text-rose-500") font-semibold">@context.Title</p>
                 <p>Published: @context.Published</p>
                 <p>Creation: @context.Creation</p>
@@ -29,7 +29,7 @@
     {
         if (firstRender)
         {
-            assignments = await AssignmentService.AllAsync().ToListAsync();
+            assignments = new(await AssignmentService.AllAsync());
             await InvokeAsync(StateHasChanged);
         }
     }

@@ -1,0 +1,64 @@
+@page "/dashboard/groups/{id:guid}"
+@layout DashboardLayout
+@inject IGroupsService GroupsService
+@inject IPublishedStaticContentEditContextProvider PublishedStaticContentEditContextProvider
+@attribute [Authorize(Roles="Admin")]
+<AdminCheck/>
+
+<PageTitle>Groups</PageTitle>
+
+<div class="flex flex-col p-3 ">
+    @if (loading)
+    {
+        <h3 class="text-lg font-semibold">View Assignment</h3>
+        <p class="pl-2">loading</p>
+    }
+    else if (group is null)
+    {
+        <h3 class="text-3xl font-semibold">Assignment not found.</h3>
+    }
+    else
+    {
+        <div class="flex flex-col justify-between h-screen space-y-5">
+            <div>
+                <h3 class="text-3xl font-semibold">View Group</h3>
+                <a href="/dashboard/groups/" class="pl-2 italic text-indigo-500 hover:underline">return to all groups</a>
+            </div>
+
+            <h4 class="text-2xl font-bold">@group.Name</h4>
+
+            <h4 class="text-2xl font-semibold text-center">Assignment Details</h4>
+
+            @if (staticContentEditContext is null)
+            {
+                <div class="flex mb-auto h-[48rem] grow">Editor loading.</div>
+            }
+            else
+            {
+                <StaticContentEditor Context=staticContentEditContext class="flex mb-auto h-max grow"/>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private bool loading = true;
+    private Group? group;
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private IStaticContentEditContext? staticContentEditContext;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            group = await GroupsService.TryReadGroup(Id);
+            loading = false;
+            staticContentEditContext = PublishedStaticContentEditContextProvider.GetContentEditContext(Id.ToString(), nameof(Group));
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}
+
