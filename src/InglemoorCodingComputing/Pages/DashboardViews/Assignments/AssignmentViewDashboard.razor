@@ -2,14 +2,23 @@
 @layout DashboardLayout
 @inject IAssignmentService AssignmentService
 @inject IUserStateService UserStateService
+@inject IUserService UserService
 @inject IPublishedStaticContentEditContextProvider PublishedStaticContentEditContextProvider
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 @attribute [Authorize(Roles="Admin")]
+@using System.Collections.Concurrent
 <AdminCheck/>
 
 <PageTitle>Assignment</PageTitle>
 
 <div class="flex flex-col p-3 ">
-    @if (assignment is null)
+    @if (loading)
+    {
+        <h3 class="text-lg font-semibold">View Assignment</h3>
+        <p class="pl-2">loading</p>
+    }
+    else if (assignment is null)
     {
         <h3 class="text-3xl font-semibold">Assignment not found.</h3>
     }
@@ -17,15 +26,18 @@
     {
         <div class="flex flex-col justify-between h-screen space-y-5">
             <div>
-                <h3 class="text-3xl font-semibold">Edit Assignment</h3>
+                <h3 class="text-3xl font-semibold">View Assignment</h3>
                 <a href="/dashboard/assignments/" class="pl-2 italic text-indigo-500 hover:underline">return to all assignments</a>
             </div>
 
             <form class="flex flex-col space-y-2">
-                <div class="flex">
+                <div class="flex justify-between">
                     <div>
                         <label for="title">Title:<span class="text-sm align-top text-rose-500">*</span></label>
                         <input type="text" @bind=title id="title" class="block w-64 px-3 py-2 text-gray-900 bg-gray-100 focus:outline-none sm:text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-600 dark:placeholder-gray-400 dark:text-white"/>
+                    </div>
+                    <div class="pr-4">
+                        <DeleteButton OnDelete=DeleteAsync CustomName=@assignment.Title/>
                     </div>
                 </div>
                 <div>
@@ -43,9 +55,28 @@
                     }
                 </div>
             </form>
+
+            <h4 class="text-2xl font-semibold">Assignment Submissions</h4>
+            <div class="pl-4">
+                @if (assignment.Submissions.Count == 0)
+                {
+                    <div>No submisions yet</div>
+                }
+                else
+                {
+                    @foreach (var submission in assignment.Submissions)
+                    {
+                        <a href="/dashboard/assignments/@assignment.Id/@submission.Id">@(submitters.TryGetValue(submission.CreatedBy, out var user) && user is not null ? user.FirstName + user.LastName : "Unknown") </a>
+                    }
+                }
+            </div>
+            
+
+            <h4 class="text-2xl font-semibold text-center">Assignment Details</h4>
+
             @if (staticContentEditContext is null)
             {
-                <div class="flex mb-auto h-max grow">Editor loading.</div>
+                <div class="flex mb-auto h-[48rem] grow">Editor loading.</div>
             }
             else
             {
@@ -63,6 +94,8 @@
     [Parameter]
     public Guid Id { get; set; }
 
+    private bool loading = true;
+
     private string? error;
 
     private string title = string.Empty;
@@ -73,15 +106,20 @@
 
     private Assignment? assignment;
 
+    private ConcurrentDictionary<Guid, AppUser?> submitters = new();
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             assignment = await AssignmentService.TryReadAsync(Id);
+            loading = false;
             if (assignment is null) return;
             title = assignment.Title;
             published = assignment.Published;
             staticContentEditContext = PublishedStaticContentEditContextProvider.GetContentEditContext(Id.ToString(), nameof(Assignment));
+            foreach (var sub in assignment.Submissions)
+                submitters[sub.CreatedBy] = await UserService.TryReadUserAsync(sub.CreatedBy);
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -92,13 +130,23 @@
     {
         error = null;
         if (assignment is null) return;
-        var n = assignment with {Published = published, Title = title};
+        var n = assignment with { Published = published, Title = title };
         if (!await AssignmentService.TryUpdateAsync(n))
             error = "Failed to save.";
         else
             assignment = n;
         await InvokeAsync(StateHasChanged);
     }
+
+    private async Task DeleteAsync()
+    {
+        error = null;
+        if (assignment is null) return;
+        var n = assignment with { Published = false, Deletion = DateTime.UtcNow };
+        if (!await AssignmentService.TryUpdateAsync(n))
+            error = "Failed to delete.";
+        else
+            NavigationManager.NavigateTo("/dashboard/assignments");
+        await InvokeAsync(StateHasChanged);
+    }
 }
-
-

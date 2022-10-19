@@ -5,9 +5,9 @@
 
 <div @attributes=AdditionalAttributes>
     <div class="flex flex-col overflow-hidden bg-gray-100 rounded-xl dark:bg-zinc-700 grow">
-        <div class="grid grid-cols-2 font-bold text-slate-700 dark:text-slate-400">
-            <div @onclick="() => previewing = false" aria-pressed="@(!previewing)" role="button" class="@($"py-2 text-center {(previewing ? "bg-gray-200 dark:bg-zinc-800" : "bg-gray-100 dark:bg-zinc-700")}")">Edit</div>
-            <div @onclick="() => previewing = true" aria-pressed="@previewing" role="button" class="@($"py-2 text-center {(previewing ? "bg-gray-100 dark:bg-zinc-700" : "bg-gray-200 dark:bg-zinc-800")}")">Preview</div>
+        <div class="grid grid-cols-2 font-bold select-none text-slate-700 dark:text-slate-400">
+            <div @onclick="() => previewing = false" aria-pressed="@(!previewing)" role="button" class="@($"py-2 text-center {(!previewing ? "bg-gray-100 dark:bg-zinc-700" : "bg-gray-200 dark:bg-zinc-900 hover:bg-gray-300 dark:hover:bg-zinc-800")}")">Edit</div>
+            <div @onclick="() => previewing = true" aria-pressed="@previewing" role="button" class="@($"py-2 text-center {(previewing ? "bg-gray-100 dark:bg-zinc-700" : "bg-gray-200 dark:bg-zinc-900 hover:bg-gray-300 dark:hover:bg-zinc-800")}")">Preview</div>
         </div>
         <div class="relative flex grow">
             <div class="flex p-3 grow">
@@ -23,30 +23,30 @@
                 {
 
                     <textarea class="grow bg-gray-50 dark:bg-zinc-800 focus:outline-none overflow-auto resize-none rounded-md break-normal whitespace-pre px-2 py-1 break-normal whitespace-pre min-h-[100px] font-code" aria-hidden="true" @bind=Raw @bind:event="oninput"/>
-                    <div class="absolute bottom-0 right-0 transition duration-100">
-                        @if (changed)
-                        {
-                            @if (Context.AutoSave)
-                            {
-                                <p class="pr-6 text-sm text-gray-500 pb-7">auto-saved</p>
-                            }
-                            else
-                            {
-                                <button class="flex px-3 py-2 mb-5 mr-5 space-x-1 font-semibold text-white rounded-2xl bg-fuchsia-400/75" @onclick=Save>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                                        <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-                                    </svg>
-                                    <span>
-                                        Save
-                                    </span>
-                                </button>
-                            }
-                        }
-                    </div>
                     <div class="absolute bottom-0 left-0">
                         <p class="pl-6 text-sm text-gray-500 pb-7">Markdown</p>
                     </div>
                 }
+                <div class="absolute bottom-0 right-0 transition duration-100">
+                    @if (changed)
+                    {
+                        @if (Context.AutoSave)
+                        {
+                            <p class="pr-6 text-sm text-gray-500 pb-7">auto-saved</p>
+                        }
+                        else
+                        {
+                            <button class="flex px-3 py-2 mb-5 mr-5 space-x-1 font-semibold text-white rounded-2xl bg-fuchsia-400/75" @onclick=Save>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                                </svg>
+                                <span>
+                                    Save
+                                </span>
+                            </button>
+                        }
+                    }
+                </div>
             </div>
         </div>
     </div>

@@ -258,8 +258,11 @@
         pages.Clear();
         await foreach(var page in StaticPageService.SearchAsync())
         {
-            pages.Add(page);
-            await InvokeAsync(StateHasChanged);
+            if (string.IsNullOrEmpty(page.Area))
+            {
+                pages.Add(page);
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
 
@@ -272,8 +275,11 @@
             StaticPageService.Changed += OnChanged;
             await foreach(var page in StaticPageService.SearchAsync())
             {
-                pages.Add(page);
-                await InvokeAsync(StateHasChanged);
+                if (string.IsNullOrEmpty(page.Area))
+                {
+                    pages.Add(page);
+                    await InvokeAsync(StateHasChanged);
+                }
             }
         }
     }

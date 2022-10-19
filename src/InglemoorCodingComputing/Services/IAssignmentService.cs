@@ -6,5 +6,5 @@ public interface IAssignmentService
     Task<Assignment?> TryReadAsync(Guid id);
     Task<bool> TryUpdateAsync(Assignment assignment);
     Task<bool> TryDeleteAsync(Guid id);
-    IAsyncEnumerable<Assignment> AllAsync();
+    Task<IReadOnlyList<Assignment>> AllAsync();
 }
