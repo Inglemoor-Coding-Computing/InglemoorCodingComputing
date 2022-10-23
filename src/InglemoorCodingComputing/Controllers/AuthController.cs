@@ -123,7 +123,7 @@ public class AuthController : ControllerBase
                 return Redirect(
                     user?.RegistrationIncomplete is true
                     ? $"/authentication/register-google{(returnUrl is null ? "" : "?returnUrl=" + Uri.EscapeDataString(returnUrl))}"
-                    : returnUrl ?? "/");
+                    : "/" + (returnUrl ?? string.Empty));
             }
             else if (!await _approvedEmailsService.EmailApprovedAsync(emailAddress))
             {
