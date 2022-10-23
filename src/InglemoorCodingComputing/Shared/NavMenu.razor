@@ -33,8 +33,8 @@
                 <div class="hidden h-12 my-auto ml-4 space-x-2 font-semibold sm:flex flex-nowrap">
                     <AuthorizeView>
                         <NotAuthorized>
-                            <a href="authentication/login" class="inline-flex items-center px-3 py-1 text-indigo-500 border-2 border-indigo-400 whitespace-nowrap rounded-xl hover:border-transparent hover:shadow-lg hover:shadow-indigo-300/50 hover:bg-indigo-500 hover:text-white">Sign in</a>
-                            <a href="authentication/register" class="inline-flex items-center px-3 py-1 text-white bg-indigo-500 whitespace-nowrap rounded-xl hover:shadow-lg hover:shadow-indigo-500/50">Sign up</a>
+                            <a href=@loginUrl class="inline-flex items-center px-3 py-1 text-indigo-500 border-2 border-indigo-400 whitespace-nowrap rounded-xl hover:border-transparent hover:shadow-lg hover:shadow-indigo-300/50 hover:bg-indigo-500 hover:text-white">Sign in</a>
+                            <a href=@registerUrl class="inline-flex items-center px-3 py-1 text-white bg-indigo-500 whitespace-nowrap rounded-xl hover:shadow-lg hover:shadow-indigo-500/50">Sign up</a>
                         </NotAuthorized>
                         <Authorized>
                             <a class="inline-flex items-center text-indigo-500 whitespace-nowrap hover:underline" href="/profile">
@@ -67,8 +67,8 @@
                         <div class="flex pt-2 space-x-2">
                             <AuthorizeView>
                                 <NotAuthorized>
-                                    <a href="authentication/login" class="inline-flex items-center px-3 py-1 text-indigo-500 bg-white border-2 border-indigo-400 whitespace-nowrap rounded-xl hover:border-transparent hover:shadow-lg hover:shadow-indigo-300/50 hover:bg-indigo-500 hover:text-gray-300 dark:bg-gray-700">Sign in</a>
-                                    <a href="authentication/register" class="inline-flex items-center px-3 py-1 text-white bg-indigo-500 whitespace-nowrap rounded-xl hover:shadow-lg hover:shadow-indigo-500/50">Sign up</a>
+                                    <a href="@loginUrl" class="inline-flex items-center px-3 py-1 text-indigo-500 bg-white border-2 border-indigo-400 whitespace-nowrap rounded-xl hover:border-transparent hover:shadow-lg hover:shadow-indigo-300/50 hover:bg-indigo-500 hover:text-gray-300 dark:bg-gray-700">Sign in</a>
+                                    <a href="@registerUrl" class="inline-flex items-center px-3 py-1 text-white bg-indigo-500 whitespace-nowrap rounded-xl hover:shadow-lg hover:shadow-indigo-500/50">Sign up</a>
                                 </NotAuthorized>
                                 <Authorized>
                                     <a class="inline-flex items-center text-indigo-500 whitespace-nowrap hover:underline" href="/profile">
@@ -87,11 +87,42 @@
 </nav>
 
 @code {
+    private string loginUrl = "authentication/login";
+    private string registerUrl = "authentication/register";
     private bool navOpen;
     private string? firstName;
+    private void UpdateUrls()
+    {
+        loginUrl = "authentication/login";
+        registerUrl = "authentication/register";
+
+        if (NavigationManager.BaseUri == NavigationManager.Uri)
+            return;
+
+        var relative = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+
+        if (NavigationManager.Uri.Contains("authentication/login"))
+        {
+            loginUrl = NavigationManager.Uri;
+            registerUrl = NavigationManager.Uri.Replace("authentication/login", "authentication/register");
+            return;
+        }
+
+        if (NavigationManager.Uri.Contains("authentication/register"))
+        {
+            registerUrl = NavigationManager.Uri;
+            loginUrl = NavigationManager.Uri.Replace("authentication/register", "authentication/login");
+            return;
+        }
+
+        loginUrl += "?returnUrl=" + Uri.EscapeDataString(relative);
+        registerUrl += "?returnUrl=" + Uri.EscapeDataString(relative);
+    }
+
     private async void OnLocationChanged(object? _, LocationChangedEventArgs __)
     {
         navOpen = false;
+        UpdateUrls();
         await InvokeAsync(StateHasChanged);
     }
 
