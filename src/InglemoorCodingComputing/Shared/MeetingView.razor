@@ -1,6 +1,7 @@
 ﻿@inject IUserStateService UserStateService
 @inject IUserService UserService
 @inject IJSRuntime JSRuntime
+@inject IPublishedStaticContentEditContextProvider PublishedStaticContentEditContextProvider
 @implements IDisposable
 <div class="px-3 sm:px-6 py-4 w-fit my-3 rounded-xl text-slate-900 dark:text-slate-200 bg-gray-100 dark:bg-gray-700 flex align-middle">
     <div>
@@ -8,6 +9,23 @@
         <div class="text-lg font-semibold">@Meeting.Date.ToString("D")</div>
         <div class="italic">@Meeting.StartTime.ToString("t") / @Meeting.EndTime.ToString("t")</div>
         <div>@Meeting.Details</div>
+        @if (Editable)
+        {
+            @if (staticContentEditContext is null)
+            {
+                <div class="flex h-80 w-80 grow m-2">Editor loading.</div>
+            }
+            else
+            {
+                <StaticContentEditor Context=staticContentEditContext class="flex h-80 w-80 grow m-2"/>
+            }
+        }
+        else
+        {
+            <div class="flex w-64 grow">
+                <StaticEmbed SmallEmbed=true Tag=@Meeting.Id.ToString() Area=@nameof(Meeting)/>
+            </div>
+        }
         @if (Attendance)
         {
             <AuthorizeView>
@@ -128,13 +146,16 @@
         using DotNetStreamReference streamRef = new(stream);
         await module.InvokeVoidAsync("downloadFileFromStream", "attendance.csv", streamRef);
     }
-
+    private IStaticContentEditContext? staticContentEditContext;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             if (Editable)
+            {
                 module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Shared/MeetingView.razor.js");
+                staticContentEditContext = PublishedStaticContentEditContextProvider.GetContentEditContext(Meeting.Id.ToString(), nameof(Meeting));
+            }
             user = await UserStateService.CurrentAsync();
             UserStateService.Updated += OnUserUpdated;
             await InvokeAsync(StateHasChanged);

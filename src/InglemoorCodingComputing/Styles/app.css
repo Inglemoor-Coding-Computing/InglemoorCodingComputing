@@ -8,3 +8,7 @@
 .styled-prose {
     @apply px-2 py-1 m-1 prose bg-transparent rounded-md grow prose-h1:font-semibold lg:prose-lg xl:prose-xl prose-pre:font-code prose-pre:bg-transparent dark:prose-invert prose-pre:overflow-x-auto prose-pre:max-w-[80vw];
 }
+
+.embed-prose {
+    @apply prose-sm md:prose bg-transparent rounded-md grow prose-headings:font-semibold prose-headings:m-0 prose-p:m-0 prose-a:m-0 prose-pre:font-code prose-pre:bg-transparent dark:prose-invert prose-pre:overflow-x-auto prose-pre:max-w-[80vw];
+}

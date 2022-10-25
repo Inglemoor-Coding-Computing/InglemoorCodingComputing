@@ -3,6 +3,7 @@
 @inject IUserStateService UserStateService
 @inject TimeZoneService TimeZoneService
 @inject IJSRuntime JSRuntime
+@inject IStaticPageService StaticPageService
 @implements IDisposable
 @layout DashboardLayout
 @attribute [Authorize(Roles="Admin")]
@@ -20,10 +21,14 @@
                 Name:
                 <InputText class="px-2 py-1 border border-indigo-500 rounded-lg focus:outline-none dark:bg-zinc-800" id="name" @bind-Value="creation.Name" />
             </label>
-            <label>
-                Details (optional):<br/>
-                <textarea class="px-2 py-1 border border-indigo-500 rounded-lg focus:outline-none dark:bg-zinc-800" id="details" @bind="creation.Details" />
-            </label>
+            @if (staticContentEditContext is null)
+            {
+                <div class="flex h-64 w-64 grow">Editor loading.</div>
+            }
+            else
+            {
+                <StaticContentEditor Context=staticContentEditContext class="flex h-64 w-64 grow"/>
+            }
             <label>
                 Month/Day<br/>
                 <InputNumber class="w-10 px-2 py-1 border border-indigo-500 rounded-lg focus:outline-none dark:bg-zinc-800" id="month" @bind-Value="creation.Month" />
@@ -70,6 +75,8 @@
 
     List<Meeting> meetings = new();
 
+    StaticContentEditContext? staticContentEditContext; 
+    private readonly Guid id = Guid.NewGuid();
     private async Task CreateAsync()
     {
         error = null;
@@ -79,6 +86,11 @@
         {
             await MeetingsService.CreateAsync(meeting);
             await ClearAsync();
+            if (page is not null)
+            {
+                await Task.Delay(200);
+                await StaticPageService.CreateAsync(page with { Path = meeting.Id.ToString() });
+            }
         }
         else
             error = "Invalid Parameters";
@@ -109,10 +121,27 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    Models.StaticPage? page;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            page = new()
+            {
+                Area = nameof(Meeting),
+                Id = Guid.NewGuid(),
+                Path = id.ToString(),
+                Live = true,
+                Creation = DateTime.UtcNow,
+                Type = StaticPageType.Markdown
+            };
+    
+            staticContentEditContext = new()
+            {
+                InitialPage = page,
+                AutoSave = true,
+                Saved = p => page = p
+            };
             await ClearAsync();
             await RefreshAsync();
             MeetingsService.Changed += OnChanged;

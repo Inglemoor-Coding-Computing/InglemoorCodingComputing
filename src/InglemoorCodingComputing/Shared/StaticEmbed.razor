@@ -9,7 +9,7 @@
 else if (contents is not null)
 {
     <div class="flex justify-center">
-        <div class="styled-prose">
+        <div class=@(SmallEmbed ? "embed-prose" : "styled-prose")>
             @((MarkupString)contents)
         </div>
     </div>
@@ -21,6 +21,9 @@ else if (contents is not null)
 
     [Parameter]
     public string? Area { get; set; }
+
+    [Parameter]
+    public bool SmallEmbed { get; set; }
 
     private string? contents;
 
