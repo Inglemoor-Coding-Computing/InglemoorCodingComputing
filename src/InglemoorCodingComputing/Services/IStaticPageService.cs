@@ -12,4 +12,5 @@ public interface IStaticPageService
     Task DeleteAsync(Guid id);
     event Action Changed;
     Task<bool> TrySetPublishStatusAsync(string path, bool live, string? area = null);
+    Task<bool> TrySetPublishStatusAsync(Guid id, bool live);
 }
