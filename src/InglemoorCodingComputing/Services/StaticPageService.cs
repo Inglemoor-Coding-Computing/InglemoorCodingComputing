@@ -144,6 +144,17 @@ public sealed class StaticPageService : IStaticPageService
             return false;
         _cacheService.Delete(area is null ? path : AreaCachePath(path, area));
 
+        await _container.ReplaceItemAsync(page with { Live = live }, page.Id.ToString());
+        Changed?.Invoke();
+        return true;
+    }
+
+    public async Task<bool> TrySetPublishStatusAsync(Guid id, bool live)
+    {
+        var page = await FindAsync(id);
+        if (page is null)
+            return false;
+        _cacheService.Delete(page.Path);
 
         await _container.ReplaceItemAsync(page with { Live = live }, page.Id.ToString());
         Changed?.Invoke();

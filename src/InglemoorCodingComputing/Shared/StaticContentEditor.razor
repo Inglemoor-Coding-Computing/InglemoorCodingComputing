@@ -1,6 +1,7 @@
 ﻿@inject IStaticPageService StaticPageService
 @inject IJSRuntime JSRuntime
 @inject Ganss.XSS.HtmlSanitizer HtmlSanitizer
+@using System.Web
 @using Markdig
 
 <div @attributes=AdditionalAttributes>
@@ -22,31 +23,26 @@
                 else
                 {
 
-                    <textarea class="grow bg-gray-50 dark:bg-zinc-800 focus:outline-none overflow-auto resize-none rounded-md break-normal whitespace-pre px-2 py-1 break-normal whitespace-pre min-h-[100px] font-code" aria-hidden="true" @bind=Raw @bind:event="oninput"/>
+                    <textarea class="grow bg-gray-50 dark:bg-zinc-800 focus:outline-none overflow-auto resize-none rounded-md break-normal whitespace-pre px-2 py-1 min-h-[100px] font-code" aria-hidden="true" @bind=Raw @bind:event="oninput"/>
                     <div class="absolute bottom-0 left-0">
-                        <p class="pl-6 text-sm text-gray-500 pb-7">Markdown</p>
+                        <div class="pl-6 pb-7">
+                            <button @onclick=SwitchTypeAsync class="text-sm text-gray-500 transition hover:text-indigo-500 hover:font-semibold">@type</button>
+                        </div>
                     </div>
                 }
-                <div class="absolute bottom-0 right-0 transition duration-100">
-                    @if (changed)
-                    {
-                        @if (Context.AutoSave)
-                        {
-                            <p class="pr-6 text-sm text-gray-500 pb-7">auto-saved</p>
-                        }
-                        else
-                        {
-                            <button class="flex px-3 py-2 mb-5 mr-5 space-x-1 font-semibold text-white rounded-2xl bg-fuchsia-400/75" @onclick=Save>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                                    <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-                                </svg>
-                                <span>
-                                    Save
-                                </span>
-                            </button>
-                        }
-                    }
-                </div>
+                @if (changed && !Context.AutoSave)
+                {
+                    <div class="absolute bottom-0 right-0 transition duration-100">
+                        <button class="flex px-3 py-2 mb-5 mr-5 space-x-1 font-semibold text-white rounded-2xl bg-fuchsia-400/75" @onclick=Save>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                            </svg>
+                            <span>
+                                Save
+                            </span>
+                        </button>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -54,14 +50,15 @@
 
 
 @code {
-    private string markdown = string.Empty;
+    private string raw = string.Empty;
     private string rendered = string.Empty;
+    private StaticPageType type = StaticPageType.Markdown;
     private string Raw 
     {
-        get => markdown;
+        get => raw;
         set
         {
-            markdown = value;
+            raw = value;
             _ = KeyPressed();
         }
     }
@@ -76,6 +73,18 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
+    private async Task SwitchTypeAsync()
+    {
+        type = type switch
+        {
+            StaticPageType.Markdown => StaticPageType.Html,
+            StaticPageType.Html => StaticPageType.Text,
+            StaticPageType.Text or _ => StaticPageType.Markdown
+        };
+        await KeyPressed();
+    }
+
+
     private void Save()
     {
         if (page is null)
@@ -83,7 +92,7 @@
         changed = false;
         Context.Saved(page with
         {
-            Raw = markdown,
+            Raw = Raw,
             Rendered = rendered
         });
     }
@@ -98,7 +107,12 @@
             {
                 loading = true;
                 queued = false;
-                rendered = HtmlSanitizer.Sanitize(Markdown.ToHtml(markdown, new MarkdownPipelineBuilder().UseAdvancedExtensions().Build()));
+                rendered = HtmlSanitizer.Sanitize(type switch
+                {
+                    StaticPageType.Markdown => Markdown.ToHtml(raw, new MarkdownPipelineBuilder().UseAdvancedExtensions().Build()),
+                    StaticPageType.Html => raw,
+                    StaticPageType.Text or _ => $"<pre>{HttpUtility.HtmlEncode(raw)}</pre>",
+                });
                 if (Context.AutoSave)
                     Save();
                 changed = true;
@@ -120,7 +134,7 @@
         {
             page = await Context.InitialPageAsync();
             rendered = page.Rendered;
-            markdown = page.Raw;
+            raw = page.Raw;
             await InvokeAsync(StateHasChanged);
         }
     }

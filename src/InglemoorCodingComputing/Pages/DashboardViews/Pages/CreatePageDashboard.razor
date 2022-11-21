@@ -1,0 +1,191 @@
+﻿@page "/dashboard/pages/create"
+@layout DashboardLayout
+@inject IStaticPageService StaticPageService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles="Admin")]
+@using System.Text.RegularExpressions
+<AdminCheck/>
+
+<PageTitle>New Page</PageTitle>
+
+<div class="flex flex-col content-between h-screen p-3 justify">
+    <div class="flex flex-col space-y-5">
+        <div>
+            <h3 class="text-3xl font-semibold">Create Page</h3>
+            <a href="/dashboard/pages/" class="pl-2 italic font-semibold text-indigo-500 dark:text-indigo-400 hover:underline">return to all pages</a>
+        </div>
+
+        <form class="flex flex-col items-start py-1 pb-3 space-y-2">
+            <div class="flex space-x-3">
+                <div class="flex items-center space-x-2">
+                    <label for="title">Route:<span class="text-sm align-top text-rose-500">*</span></label>
+                    <input type="text" @bind=Route @bind:event="oninput" id="route" class="block w-48 px-2 py-1 text-gray-900 bg-gray-100 rounded-lg focus:outline-none sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-600 dark:placeholder-gray-400 dark:text-white"/>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <label for="title">Title:</label>
+                    <input type="text" @bind=title id="title" class="block w-48 px-2 py-1 text-gray-900 bg-gray-100 rounded-lg focus:outline-none sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-600 dark:placeholder-gray-400 dark:text-white"/>
+                </div>
+                
+                <div class="flex items-center space-x-1 select-none">
+                    @if (auth)
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M14.5 1A4.5 4.5 0 0010 5.5V9H3a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-1.5V5.5a3 3 0 116 0v2.75a.75.75 0 001.5 0V5.5A4.5 4.5 0 0014.5 1z" clip-rule="evenodd" />
+                        </svg>
+                    }
+                    <label for="auth">Authenticated:</label>
+                    <input id="auth" type="checkbox" @bind=auth/>
+                    @if (auth)
+                    {
+                        <label for="admin">Admin:</label>
+                        <input id="admin" type="checkbox" @bind=admin/>
+                    }
+                </div>
+
+            </div>
+            <div class="flex items-start space-x-3">
+                <div class="flex items-center space-x-2">
+                    <label for="live">Live:</label>
+                    <input type="checkbox" @bind=live id="live" />
+                </div>
+                @if (routeInvalid is not null)
+                {
+                    <p class="text-rose-500">@routeInvalid</p>
+                }
+                else
+                {
+                    <p class="text-emerald-400">@finalRoute</p>
+                }
+            </div>
+        </form>
+    </div>
+    @if (staticContentEditContext is null)
+    {
+        <div class="flex mb-auto h-max grow">Editor loading...</div>
+    }
+    else
+    {
+        <StaticContentEditor Context=staticContentEditContext class="flex mb-auto h-max grow"/>
+    }
+    <div class="font-semibold text-center text-rose-500">
+        @error
+    </div>
+    <div class="flex justify-center pt-3 pb-1">
+        <button disabled=@Disabled  class=@($"px-2 py-1 text-lg font-semibold text-white rounded-lg w-fit {(Disabled ? "bg-indigo-300" : "bg-indigo-500 hover:bg-indigo-600")}") @onclick=CreateAsync>Create Page</button>
+    </div>
+</div>
+
+@code {
+    private bool Disabled => string.IsNullOrWhiteSpace(Route) || routeInvalid is not null; 
+    private bool live = true;
+    private bool auth;
+    private bool admin;
+    private string _route = string.Empty;
+    private string? error;
+    private string Route
+    {
+        get => _route;
+        set
+        {
+            _route = value;
+            _ = PathEntered();
+        }
+    }
+    private string? title;
+    private string? finalRoute;
+    private string? routeInvalid;
+
+    private bool queued2;
+    private bool loading2;
+    private async Task PathEntered()
+    {
+        if (loading2)
+            queued2 = true;
+        else
+        {
+            do
+            {
+                loading2 = true;
+                queued2 = false;
+                routeInvalid = null;
+                if (string.IsNullOrWhiteSpace(Route))
+                {
+                    finalRoute = null;
+                    routeInvalid = "Cannot be empty";
+                }
+                else if (Regex.IsMatch(Route, @"[^_ a-zA-Z0-9+\-\/]", RegexOptions.None, TimeSpan.FromMilliseconds(100)))
+                {
+                    finalRoute = null;
+                    routeInvalid = "Invalid Characters";
+                }
+                else if (await StaticPageService.FindAsync(Route) is not null)
+                {
+                    finalRoute = null;
+                    routeInvalid = "Route in use";
+                }
+                else
+                {
+                    finalRoute = 
+                        Route.Length > 0 && Route[0] == '_'
+                        ? "Embed content, not accessible from link"
+                        : $"{NavigationManager.BaseUri}page/{Route}";
+                }
+                loading2 = false;
+            }
+            while (queued2);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task CreateAsync()
+    {
+        if (Disabled || page is null)
+            return;
+        if (await StaticPageService.FindAsync(Route) is Models.StaticPage old && !old.Deletion.HasValue)
+            error = "Failed to create: Route in use.";
+        await StaticPageService.CreateAsync(page with
+        {
+            Live = live,
+            Authorized = auth,
+            AdminAuthorized = auth && admin,
+            Title = title,
+            Path = Route
+        });
+        NavigationManager.NavigateTo("dashboard/pages");
+    }
+
+    private StaticContentEditContext? staticContentEditContext;
+
+    private Models.StaticPage? page;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeVoidAsync("highlightSnippet");
+        if (firstRender)
+        {
+            page = new()
+            {
+                Id = Guid.NewGuid(),
+                Path = string.Empty,
+                Live = true,
+                Creation = DateTime.UtcNow,
+                Type = StaticPageType.Markdown
+            };
+    
+            staticContentEditContext = new()
+            {
+                InitialPage = page,
+                AutoSave = true,
+                Saved = p => page = p
+            };
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}
