@@ -39,13 +39,13 @@ jobs:
       run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build
     - name: Publish
       run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
-    - name: Deploy to Azure WebApp
-      if: ${{ github.event_name == 'push' }}
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.inglemoorccc_FFFF }}
-        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    #- name: Deploy to Azure WebApp
+    #  if: ${{ github.event_name == 'push' }}
+    #  uses: azure/webapps-deploy@v2
+    #  with:
+    #    app-name: ${{ env.AZURE_WEBAPP_NAME }}
+    #    publish-profile: ${{ secrets.inglemoorccc_FFFF }}
+    #    package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
     - name: Compress package
       if: ${{ github.event_name == 'push' }}
       run: dotnet fsi scripts/deploy.fsx
