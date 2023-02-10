@@ -17,7 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 async Task<CosmosClient> ConfigureCosmos(IConfigurationSection config)
 {
     CosmosClient cosmos = new(config["ConnStr"], new() { SerializerOptions = new() { PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase } });
-    var throughput = ThroughputProperties.CreateManualThroughput(int.Parse(config["Throughput"]));
+    var throughput = ThroughputProperties.CreateManualThroughput(int.Parse(config["Throughput"] ?? "400"));
     var db = (await cosmos.CreateDatabaseIfNotExistsAsync(config["DatabaseName"], throughput)).Database;
     _ = await db.CreateContainerIfNotExistsAsync(new(config["AuthContainer"], "/id"));
     _ = await db.CreateContainerIfNotExistsAsync(new(config["UserContainer"], "/id"));
