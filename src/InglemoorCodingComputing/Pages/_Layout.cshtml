@@ -28,7 +28,7 @@
             hljs.highlightAll();
         }
     </script>
-    <script>
+    <script data-cfasync="false">
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark')
             document.querySelector(`link[title="dark"]`).removeAttribute("disabled");
