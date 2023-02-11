@@ -4,133 +4,56 @@
 
 <!DOCTYPE html>
 <html lang="en" style="margin-left: calc(100vw - 100%);">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="title" content="Inglemoor Coding & Computing Club">
-        <meta name="description" content="The official website for the Coding & Computing Club of Inglemoor High School.">
-        <meta name="keywords"
-            content="Inglemoor, Inglemoor High School, Inglemoor High School Coding and Computing Club, IHS CCC">
-        <meta name="google-site-verification" content="u7MsttzbCwZ2Fe_mhFlkn7tMbU6hC5XzIRZzQ_oBTgg" />
-        <meta name="msvalidate.01" content="BAD210899123084CB7EC45E3C781C819" />
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="title" content="Inglemoor Coding & Computing Club">
+    <meta name="description" content="The official website for the Coding & Computing Club of Inglemoor High School.">
+    <meta name="keywords"
+          content="Inglemoor, Inglemoor High School, Inglemoor High School Coding and Computing Club, IHS CCC">
+    <meta name="google-site-verification" content="u7MsttzbCwZ2Fe_mhFlkn7tMbU6hC5XzIRZzQ_oBTgg" />
+    <meta name="msvalidate.01" content="BAD210899123084CB7EC45E3C781C819" />
 
-        <base href="~/" />
-        <link rel="stylesheet" href="tailwind.css" />
-        <link href="css/site.css" rel="stylesheet" />
-    
-        <link href="InglemoorCodingComputing.styles.css" rel="stylesheet" />
-        <link title="light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github.min.css" disabled>
-        <link title="dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github-dark.min.css" disabled>
+    <base href="~/" />
+    <link rel="stylesheet" href="tailwind.css" />
+    <link href="css/site.css" rel="stylesheet" />
+
+    <link href="InglemoorCodingComputing.styles.css" rel="stylesheet" />
+    <link title="light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github.min.css" disabled>
+    <link title="dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github-dark.min.css" disabled>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/languages/fsharp.min.js"></script>
-        <script>
-            window.highlightSnippet = function(){
-                hljs.highlightAll();
-            }
-        </script>
-        <script>
-            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark')
-                document.querySelector(`link[title="dark"]`).removeAttribute("disabled");
-            }
-            else {
-                document.documentElement.classList.remove('dark')
-                document.querySelector(`link[title="light"]`).removeAttribute("disabled");
-            }
-            highlightSnippet();
-        </script>
-        <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
-    </head>
-    <body class="bg-white dark:bg-zinc-900">
-        @RenderBody()
-        <partial name="_CookieConsentPartial" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/languages/fsharp.min.js"></script>
+    <script>
+        window.highlightSnippet = function () {
+            hljs.highlightAll();
+        }
+    </script>
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+            document.querySelector(`link[title="dark"]`).removeAttribute("disabled");
+        }
+        else {
+            document.documentElement.classList.remove('dark')
+            document.querySelector(`link[title="light"]`).removeAttribute("disabled");
+        }
+        highlightSnippet();
+    </script>
+    <component type="typeof(HeadOutlet)" render-mode="Static" />
+</head>
+<body class="bg-white dark:bg-zinc-900">
+    @RenderBody()
+    <partial name="_CookieConsentPartial" />
 
-        <div id="loading-spinner" class="hidden fixed float-right inset-x-0 bottom-0 right-0 flex justify-end animate-pulse">
-            <svg class="w-10 h-10 text-amber-500 m-2 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-        </div>
+    <div id="loading-spinner" class="hidden fixed float-right inset-x-0 bottom-0 right-0 flex justify-end animate-pulse">
+        <svg class="w-10 h-10 text-amber-500 m-2 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+    </div>
 
-        <div id="blazor-error-ui">
-            <environment include="Staging,Production">
-                An error has occurred. This application may no longer respond until reloaded.
-            </environment>
-            <environment include="Development">
-                An unhandled exception has occurred. See browser dev tools for details.
-            </environment>
-        </div>
-
-        <script src="js/timezone.js"></script>
-        <script src="js/http.js"></script>
-        <script src="js/window-state.js"></script>
-        <script src="js/theme-switcher.js" type="module"></script>
-        <script autostart="false" src="_framework/blazor.server.js"></script>
-        <script>
-            async function connectionDown(options) {
-                var spinner = document.getElementById("loading-spinner");
-                spinner.classList.remove("hidden");
-                
-                var vis = (function(){
-                    var stateKey, eventKey, keys = {
-                        hidden: "visibilitychange",
-                        webkitHidden: "webkitvisibilitychange",
-                        mozHidden: "mozvisibilitychange",
-                        msHidden: "msvisibilitychange"
-                    };
-                    for (stateKey in keys) {
-                        if (stateKey in document) {
-                            eventKey = keys[stateKey];
-                            break;
-                        }
-                    }
-                    return function(c) {
-                        if (c) document.addEventListener(eventKey, c);
-                        return !document[stateKey];
-                    }
-                })();
-                for (let i = 0; i < options.maxRetries; i++) {
-                    await this.delay(options.retryIntervalMilliseconds);
-                    if (this.isDisposed) {
-                        break;
-                    }
-                    try {
-                        if (await window.Blazor.reconnect()) {
-                            return;
-                        }
-                    } catch { }
-                }
-                // force reload when the user is looking
-                if (vis()) {
-                    location.reload();
-                }
-                else {
-                    vis(() => {
-                        if (vis()) {
-                            location.reload();
-                        }
-                    });
-                }
-            }
-
-            function delay(durationMilliseconds) {
-                return new Promise(resolve => setTimeout(resolve, durationMilliseconds));
-            }
-
-            function connectionUp(e) {
-                var spinner = document.getElementById("loading-spinner");
-                spinner.classList.add("hidden");
-            }
-            
-            window.Blazor.start({
-                reconnectionOptions: {
-                    maxRetries: 10,
-                    retryIntervalMilliseconds: 500,
-                },
-                reconnectionHandler: {
-                    onConnectionDown: e => connectionDown(e),
-                    onConnectionUp: e => connectionUp(e)
-                }
-            });
-        </script>
-    </body>
+    <script src="js/timezone.js"></script>
+    <script src="js/http.js"></script>
+    <script src="js/window-state.js"></script>
+    <script src="js/theme-switcher.js"></script>
+</body>
 </html>

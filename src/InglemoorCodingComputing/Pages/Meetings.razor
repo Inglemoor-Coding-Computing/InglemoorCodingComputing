@@ -27,9 +27,10 @@
     else
     {
         <div class="space-y-2 flex flex-col items-center">
-            <Virtualize Items=@meetings Context="meeting">
+            @foreach(var meeting in meetings)
+            {
                 <MeetingView @key=meeting.Id Meeting=meeting Editable=false/>
-            </Virtualize>
+            }
         </div>
     }
 </div>
@@ -56,15 +57,11 @@
         await RefreshAsync();
         await InvokeAsync(StateHasChanged);
     }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
-        {
-            await RefreshAsync();
-            MeetingsService.Changed += OnChanged;
-            await InvokeAsync(StateHasChanged);
-        }
+        await RefreshAsync();
+        MeetingsService.Changed += OnChanged;
+        await InvokeAsync(StateHasChanged);
     }
 
     public void Dispose() =>

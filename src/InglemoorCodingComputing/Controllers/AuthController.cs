@@ -142,5 +142,4 @@ public class AuthController : ControllerBase
     [HttpPost("logout")]
     public Task LogoutAsync() =>
         HttpContext.SignOutAsync();
-
 }

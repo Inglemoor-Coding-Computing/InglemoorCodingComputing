@@ -1,0 +1,3 @@
+﻿@page "/page/{*pageRoute}"
+@model InglemoorCodingComputing.Pages.PagesPagesModel
+@(await Html.RenderComponentWithAuthAsync(typeof(InglemoorCodingComputing.Pages.StaticPage), @Model.PageRoute))

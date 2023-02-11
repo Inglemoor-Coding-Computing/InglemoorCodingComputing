@@ -6,11 +6,8 @@ global using InglemoorCodingComputing.Services;
 global using Microsoft.AspNetCore.Authentication.Cookies;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.Azure.Cosmos;
-
-using System.Globalization;
 using SixLabors.ImageSharp.Web.DependencyInjection;
 
-CultureInfo.CurrentCulture = new("en-US");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,8 +50,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie()
     .AddGoogle(gOptions =>
     {
-        gOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-        gOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        gOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? throw new Exception("Can't find google auth");
+        gOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? throw new Exception("Can't find google auth");
     });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -84,7 +81,6 @@ builder.Services.AddSingleton(_ =>
     x.AllowedAttributes.Add("id");
     return x;
 });
-builder.Services.AddScoped<IThemeService, ThemeService>();
 builder.Services.AddScoped<IUserStateService, UserStateService>();
 builder.Services.AddScoped<IMeetingsService, MeetingsService>();
 builder.Services.AddScoped<TimeZoneService>();
@@ -128,11 +124,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapBlazorHub();
 app.MapRazorPages();
 app.MapControllers();
+app.MapBlazorHub();
 
-((IEndpointRouteBuilder)app).DataSources.Add(app.Services.GetService<URLShortenerEndpointDataSource>() ?? throw new ArgumentNullException());
+IEndpointRouteBuilder erb = app;
+erb.DataSources.Add(app.Services.GetService<URLShortenerEndpointDataSource>() ?? throw new ArgumentNullException());
 
 app.MapFallbackToPage("/_Host");
 

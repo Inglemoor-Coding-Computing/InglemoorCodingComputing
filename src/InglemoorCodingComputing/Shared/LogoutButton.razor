@@ -3,7 +3,9 @@
 @inject NavigationManager NavigationManager
 @using System.Security.Claims
 
-<button class=@Class @onclick=LogoutAsync>@ChildContent</button>
+<button class=@Class onclick=@($"post('/api/auth/logout', '').then((result) => window.location.href = '{Nav}');")>
+    @ChildContent
+</button>
 
 @code {
     [CascadingParameter]
@@ -18,14 +20,5 @@
     [Parameter]
     public string? ReturnUrl { get; set; }
 
-    private async Task LogoutAsync()
-    {
-        // Logout.
-        await JSRuntime.InvokeAsync<int>("post", new[] { "/api/auth/logout", "" });
-        
-        if ((await AuthState).User.FindFirstValue(ClaimTypes.NameIdentifier) is string id && Guid.TryParse(id, out var guid))
-            UserLogoutManager.Logout(guid);
-        
-        NavigationManager.NavigateTo(ReturnUrl ?? NavigationManager.BaseUri, true);
-    }
+    private string Nav => ReturnUrl ?? NavigationManager.BaseUri;
 }
