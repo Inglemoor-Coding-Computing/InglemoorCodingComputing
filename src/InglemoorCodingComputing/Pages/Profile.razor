@@ -87,13 +87,16 @@
     private List<LoginAttempt> allLogins = new();
     private List<LoginAttempt> firstLogins = new();
     private bool showAllLogins;
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        user = await UserStateService.CurrentAsync();
-        auth = user is not null ? await UserAuthService.TryReadUserAsync(user.Id) : null;
-        allLogins.AddRange(auth?.LoginAttepts?.OrderByDescending(x => x.Time)?.Where(x => x.Successful) ?? Array.Empty<LoginAttempt>());
-        firstLogins = allLogins.Take(10).ToList();
-        await InvokeAsync(StateHasChanged);
+        if (firstRender)
+        {
+            user = await UserStateService.CurrentAsync();
+            auth = user is not null ? await UserAuthService.TryReadUserAsync(user.Id) : null;
+            allLogins.AddRange(auth?.LoginAttepts?.OrderByDescending(x => x.Time)?.Where(x => x.Successful) ?? Array.Empty<LoginAttempt>());
+            firstLogins = allLogins.Take(10).ToList();
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task SignOutAsync()

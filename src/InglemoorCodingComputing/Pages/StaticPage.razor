@@ -22,6 +22,7 @@ else if (content.Authorized)
             <div class="flex justify-center">
                 <div class="styled-prose">
                     @((MarkupString)content.Rendered)
+                    @((MarkupString)"<script>highlightSnippet()</script>")
                 </div>
             </div>
         </Authorized>
@@ -74,8 +75,8 @@ else
             await RenderContentAsync();
 
             await InvokeAsync(StateHasChanged);
+            await JSRuntime.InvokeVoidAsync("highlightSnippet");
         }
-        await JSRuntime.InvokeVoidAsync("highlightSnippet");
     }
 
     protected override Task OnInitializedAsync() =>
