@@ -236,7 +236,7 @@ public sealed class UserAuthService : IUserAuthService
     }
 
     private Task AddLoginAttempt(UserAuth user, string ipAddress, string userAgent, bool success, string method) =>
-        _container.ReplaceItemAsync(user with { LoginAttepts = user.LoginAttepts
+        _container.ReplaceItemAsync(user with { LoginAttempts = user.LoginAttempts
                                                                    .Where(x => DateTime.UtcNow - x.Time <= TimeSpan.FromDays(7))
                                                                    .Append(new(ipAddress, userAgent, true, DateTime.UtcNow, method))
                                                                    .ToList() }, user.Id.ToString());

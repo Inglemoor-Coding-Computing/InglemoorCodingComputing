@@ -93,7 +93,7 @@
         {
             user = await UserStateService.CurrentAsync();
             auth = user is not null ? await UserAuthService.TryReadUserAsync(user.Id) : null;
-            allLogins.AddRange(auth?.LoginAttepts?.OrderByDescending(x => x.Time)?.Where(x => x.Successful) ?? Array.Empty<LoginAttempt>());
+            allLogins.AddRange(auth?.LoginAttempts?.OrderByDescending(x => x.Time)?.Where(x => x.Successful) ?? Array.Empty<LoginAttempt>());
             firstLogins = allLogins.Take(10).ToList();
             await InvokeAsync(StateHasChanged);
         }
