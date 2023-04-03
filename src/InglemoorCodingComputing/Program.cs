@@ -74,6 +74,7 @@ builder.Services.AddSingleton<UserLogoutManager>();
 builder.Services.AddSingleton<URLShortenerEndpointDataSource>();
 builder.Services.AddSingleton<IPublishedStaticContentEditContextProvider, PublishedStaticContentEditContextProvider>();
 builder.Services.AddSingleton<IStaticPageService, StaticPageService>();
+builder.Services.AddSingleton<IBannerService, BannerService>();
 builder.Services.AddSingleton(_ =>
 {
     Ganss.XSS.HtmlSanitizer x = new();
