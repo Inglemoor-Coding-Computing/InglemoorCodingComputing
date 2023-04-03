@@ -1,9 +1,16 @@
 @inject NavigationManager NavigationManager
 @inject IUserStateService UserStateService
+@inject IBannerService BannerService
 @implements IDisposable
 
-<nav class="py-2">
-    <div class="px-2 mx-auto max-w-7xl sm:px-6 lg:px-8">
+<nav>
+    @if (BannerService.GetBanner() is Banner banner)
+    {
+        <div class="w-full py-1 mb-2 text-center" style="@banner.Style">
+            @((MarkupString)banner.Html)
+        </div>
+    }
+    <div class="px-2 py-2 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div class="relative flex items-center justify-between min-h-16">
             <div class="flex items-center justify-start justify-center flex-1 sm:items-stretch md:justify-center">
                 <div class="my-auto mr-2 grow-0">

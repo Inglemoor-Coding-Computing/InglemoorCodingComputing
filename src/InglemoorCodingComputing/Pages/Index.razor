@@ -6,11 +6,11 @@
 <PageTitle>Inglemoor CCC</PageTitle>
 
 <div class="flex flex-col">
-    <div class="pointer-events-none absolute top-0 h-screen flex flex-col justify-between pb-20 pt-32 inset-0">
+    <div class="absolute inset-0 top-0 flex flex-col justify-between h-screen py-48 pointer-events-none">
         <img fetchpriority="high" alt="Inglemoor Coding & Computing Club Logo" src="logo.webp" class="max-w-[80%] lg:max-w-[50%] xl:max-w-[33%] mx-auto max-h-[70%]" style="aspect-ratio: 1028 / 927"/>
         <div class="inset-0 bottom-0 flex justify-center">
-            <button class="pointer-events-auto mx-auto my-20 no-invert dark:invert" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})" aria-label="Scroll to content">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-320 h-32 text-white dark:no-invert invert animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <button class="mx-auto my-20 pointer-events-auto no-invert dark:invert" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})" aria-label="Scroll to content">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-32 text-white w-320 dark:no-invert invert animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
             </button>
@@ -24,26 +24,26 @@
     <div class="flex flex-col justify-center text-slate-900 dark:text-slate-300">
         <h1 class="py-4 text-2xl text-center">Learn More</h1>
         <div class="flex flex-wrap justify-center space-x-3 space-y-2 font-light text-slate-600 dark:text-slate-300">
-            <div class="tooltip relative" data-text="Please fill out this quick non-commitment form if you're considering joining and would like to learn more!">
-                <a href="s/interest-form" target="_blank" class="transition-all duration-200 flex items-center px-3 py-1 mt-2 bg-gray-300 rounded-full dark:bg-gray-700 hover:bg-gray-100 hover:dark:bg-gray-600">
+            <div class="relative tooltip" data-text="Please fill out this quick non-commitment form if you're considering joining and would like to learn more!">
+                <a href="s/interest-form" target="_blank" class="flex items-center px-3 py-1 mt-2 transition-all duration-200 bg-gray-300 rounded-full dark:bg-gray-700 hover:bg-gray-100 hover:dark:bg-gray-600">
                     <img height="32" width="32" alt="Google Forms Logo" class="h-8" src="png/gforms.png" srcset="png/gforms.png?width=25 25w, png/gforms.png?width=50 50w, png/gforms.png?width=100 100w"/>
                     <p class="ml-2">Interest Form</p>
                 </a>
             </div>
-            <div class="tooltip relative" data-text="You're invited to our Discord server! Join for updates and to meet our online community.">
-                <a href="s/discord" target="_blank" class="transition-all duration-200 flex items-center px-3 py-1 bg-gray-300 rounded-full dark:bg-gray-700 hover:bg-gray-100 hover:dark:bg-gray-600">
+            <div class="relative tooltip" data-text="You're invited to our Discord server! Join for updates and to meet our online community.">
+                <a href="s/discord" target="_blank" class="flex items-center px-3 py-1 transition-all duration-200 bg-gray-300 rounded-full dark:bg-gray-700 hover:bg-gray-100 hover:dark:bg-gray-600">
                     <img height="32" width="28" alt="Discord Logo" class="h-8" src="png/discord-logo.png" srcset="png/discord-logo.png?width=25 25w, png/discord-logo.png?width=50 50w, png/discord-logo.png?width=100 100w"/>
                     <p class="ml-2">Discord</p>
                 </a>
             </div>
-            <div class="tooltip relative" data-text="Follow our official Instagram!">
-                <a href="s/instagram" target="_blank" class="transition-all duration-200 flex items-center px-3 py-1 bg-gray-300 rounded-full dark:bg-gray-700 hover:bg-gray-100 hover:dark:bg-gray-600">
+            <div class="relative tooltip" data-text="Follow our official Instagram!">
+                <a href="s/instagram" target="_blank" class="flex items-center px-3 py-1 transition-all duration-200 bg-gray-300 rounded-full dark:bg-gray-700 hover:bg-gray-100 hover:dark:bg-gray-600">
                     <img height="32" width="32" alt="Instagram Logo" class="h-8" src="png/instagram-logo.png" srcset="png/instagram-logo.png?width=25 25w, png/instagram-logo.png?width=50 50w, png/instagram-logo.png?width=100 100w"/>
                     <p class="ml-2">@@inglemoorcoding</p>
                 </a>
             </div>
-            <div class="tooltip relative" data-text="Join our remind for updates or to get your questions answered (follow this link or text @@inglecode to 81010 to join)">
-                <a href="s/remind" target="_blank" class="transition-all duration-200 flex items-center px-3 py-1 bg-gray-300 rounded-full dark:bg-gray-700 hover:bg-gray-100 hover:dark:bg-gray-600">
+            <div class="relative tooltip" data-text="Join our remind for updates or to get your questions answered (follow this link or text @@inglecode to 81010 to join)">
+                <a href="s/remind" target="_blank" class="flex items-center px-3 py-1 transition-all duration-200 bg-gray-300 rounded-full dark:bg-gray-700 hover:bg-gray-100 hover:dark:bg-gray-600">
                     <img height="32" width="32" alt="Remind Logo" class="h-8" src="png/remind-logo.png" srcset="png/remind-logo.png?width=25 25w, png/remind-logo.png?width=50 50w, png/remind-logo.png?width=100 100w"/>
                     <p class="ml-2">Remind</p>
                 </a>
