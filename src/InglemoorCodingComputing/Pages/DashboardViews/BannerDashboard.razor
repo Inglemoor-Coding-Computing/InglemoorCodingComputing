@@ -38,6 +38,7 @@
                 id="html" @bind=html />
         </div>
         <button class="px-2 py-1 font-semibold text-white rounded-lg w-fit bg-emerald-500 " @onclick=SetBanner>Set Banner</button>
+        <button class="px-2 py-1 font-semibold text-white rounded-lg w-fit bg-rose-500 " @onclick=DeleteBanner>Delete Banner</button>
     </div>
 </div>
 
@@ -60,5 +61,10 @@
                 Style = style,
                 Html = html
             });
+    }
+
+    void DeleteBanner()
+    {
+        BannerService.RemoveBanner();
     }
 }

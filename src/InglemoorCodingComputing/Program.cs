@@ -63,7 +63,7 @@ builder.Services.AddSingleton(x => ConfigureBlob(x.GetService<IConfiguration>()!
 builder.Services.AddSingleton<IUserAuthService, UserAuthService>();
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
-builder.Services.AddSingleton<IStaticResourceService, StaticResourceService>();
+builder.Services.AddSingleton<IStaticResourceService, LocalStaticResourceService>();
 builder.Services.AddSingleton<IApprovedEmailsService, ApprovedEmailsService>();
 builder.Services.AddSingleton<IURLShortenerService, URLShortenerService>();
 builder.Services.AddSingleton<IGroupsService, GroupsService>();
