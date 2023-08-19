@@ -54,6 +54,6 @@ public class LocalStaticResourceService : IStaticResourceService
     public IAsyncEnumerable<string> GetFileNamesAsync()
     {
         var files = Directory.EnumerateFiles(_rootPath);
-        return files.Select(x => DecodeName(new FileInfo(x).Name)).ToAsyncEnumerable();
+        return files.Select(x => DecodeName(new FileInfo(x).Name)).Order().ToAsyncEnumerable();
     }
 }
